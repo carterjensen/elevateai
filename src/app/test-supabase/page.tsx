@@ -6,7 +6,11 @@ import { useEffect, useState } from 'react';
 export default function TestSupabase() {
   const [connectionStatus, setConnectionStatus] = useState<string>('Testing...');
   const [error, setError] = useState<string | null>(null);
-  const [projectInfo, setProjectInfo] = useState<any>(null);
+  const [projectInfo, setProjectInfo] = useState<{
+    url: string;
+    hasSession?: boolean;
+    migrationsCount?: number;
+  } | null>(null);
 
   useEffect(() => {
     const testConnection = async () => {

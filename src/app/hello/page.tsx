@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function HelloWorld() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-100 flex items-center justify-center">
@@ -9,18 +11,18 @@ export default function HelloWorld() {
           Welcome to your Next.js app with Supabase integration
         </p>
         <div className="space-x-4">
-          <a 
+          <Link 
             href="/"
             className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
           >
             Go Home
-          </a>
-          <a 
+          </Link>
+          <Link 
             href="/test-supabase"
             className="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
           >
             Test Supabase
-          </a>
+          </Link>
         </div>
       </div>
     </div>
