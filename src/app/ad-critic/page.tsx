@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import Footer from '@/components/Footer';
 // Simple ad critic interface
 
 interface Brand {
@@ -241,26 +240,13 @@ export default function AdCritic() {
         </div>
       </header>
 
-      <main className="pt-24">
-        {/* Hero Section */}
-        <section className="px-6 py-12 text-center">
-          <div className="container mx-auto max-w-4xl">
-            <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-6">
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              AI-Powered Advertisement Analysis
-            </div>
-            <h1 className="text-5xl md:text-6xl font-bold text-slate-900 mb-6">
-              <span className="text-gradient">Ad Critic</span>
-            </h1>
-            <p className="text-xl text-slate-600 mb-12 leading-relaxed">
-              Get instant, demographic-tailored critiques on your ads with AI-powered insights from OpenAI Vision
-            </p>
-          </div>
-        </section>
-
-        <div className="container mx-auto px-6 pb-24">
+      <main className="max-w-6xl mx-auto px-4 py-8">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Ad Critic</h1>
+          <p className="text-xl text-gray-600">
+            Get AI-powered analysis of your advertisements with demographic insights
+          </p>
+        </div>
           {!analysisResult ? (
             /* Analysis Setup */
             <div className="max-w-6xl mx-auto">
@@ -584,18 +570,21 @@ export default function AdCritic() {
             </div>
           )}
 
-          {/* Error Display */}
-          {error && (
-            <div className="max-w-6xl mx-auto mt-8">
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <div className="text-red-800">{error}</div>
-              </div>
-            </div>
-          )}
-        </div>
+        {error && (
+          <div className="mt-8 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="text-red-800">{error}</div>
+          </div>
+        )}
       </main>
 
-      <Footer />
+      {/* Simple Footer */}
+      <footer className="bg-white border-t mt-24">
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="text-center text-gray-600">
+            <p>&copy; 2024 ElevateAI. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
