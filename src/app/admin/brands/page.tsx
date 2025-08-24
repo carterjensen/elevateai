@@ -45,14 +45,24 @@ export default function BrandsAdmin() {
   });
 
   // Simple password auth for admin access
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password === 'elevateai2024') {
       setIsAuthenticated(true);
-      loadBrands();
-      loadDemographics();
+      await initializeData();
+      await loadBrands();
+      await loadDemographics();
     } else {
       alert('Incorrect password');
+    }
+  };
+
+  // Initialize data if needed
+  const initializeData = async () => {
+    try {
+      await fetch('/api/admin/init', { method: 'POST' });
+    } catch (error) {
+      console.error('Error initializing data:', error);
     }
   };
 

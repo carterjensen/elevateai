@@ -49,9 +49,9 @@ export default function BrandChat() {
   const [selectedPersona, setSelectedPersona] = useState<Persona>(personas[0]);
   const [selectedBrand, setSelectedBrand] = useState<Brand>(brands[0]);
   const [isLoading, setIsLoading] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'disconnected' | 'error'>('checking');
   const [showPersonaDropdown, setShowPersonaDropdown] = useState(false);
   const [showBrandDropdown, setShowBrandDropdown] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'disconnected' | 'error'>('checking');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
