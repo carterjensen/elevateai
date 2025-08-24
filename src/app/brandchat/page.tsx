@@ -66,7 +66,7 @@ export default function BrandChat() {
         
         if (personasResult.success && personasResult.data) {
           // Convert demographics to personas format
-          const personasData = personasResult.data.map((demo: any) => ({
+          const personasData = personasResult.data.map((demo: { id: string; name: string; description: string; emoji: string; }) => ({
             id: demo.id,
             name: demo.name,
             description: demo.description,
@@ -102,7 +102,7 @@ export default function BrandChat() {
         const response = await fetch('/api/status');
         const data = await response.json();
         setConnectionStatus(data.status);
-      } catch (error) {
+      } catch {
         setConnectionStatus('error');
       }
     };

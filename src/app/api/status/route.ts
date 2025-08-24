@@ -47,7 +47,7 @@ export async function GET() {
         message: `Connection error: ${errorMessage}` 
       });
     }
-  } catch (error) {
+  } catch {
     return NextResponse.json({ 
       status: 'error', 
       message: 'Failed to connect to OpenAI' 

@@ -295,7 +295,7 @@ export function replacePromptVariables(template: string, variables: PromptVariab
 }
 
 // Auto-generate persona prompt for new demographic
-export async function generatePersonaPrompt(demographic: any): Promise<SystemPrompt> {
+export async function generatePersonaPrompt(demographic: { id: string; name: string; description: string; age_range: string; characteristics: string[]; }): Promise<SystemPrompt> {
   const promptTemplate = `You are a ${demographic.name} aged ${demographic.age_range}. ${demographic.description}
 
 Key characteristics: ${demographic.characteristics.join(', ')}

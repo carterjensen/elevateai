@@ -120,7 +120,7 @@ export default function AdCritic() {
   const uploadImageToSupabase = async (file: File): Promise<string> => {
     const fileName = `ad-images/${Date.now()}-${file.name}`;
     
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('images')
       .upload(fileName, file);
 
@@ -316,6 +316,7 @@ export default function AdCritic() {
                     {previewUrl && (
                       <div className="mt-4">
                         <label className="block text-sm font-medium text-slate-700 mb-2">Preview</label>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={previewUrl}
                           alt="Preview"
@@ -446,6 +447,7 @@ export default function AdCritic() {
                 {/* Image and Overview */}
                 <div className="card hover-lift p-8">
                   <div className="flex flex-col lg:flex-row items-start gap-8">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={previewUrl}
                       alt="Analyzed Advertisement"

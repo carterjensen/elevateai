@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+// import { supabase } from '@/lib/supabase';
 
 interface ChatRequest {
   message: string;
@@ -48,14 +48,14 @@ async function createDynamicSystemPrompt(persona: ChatRequest['persona'], brand:
 }
 
 // Helper function to replace variables in prompt templates
-function replacePromptVariables(template: string, persona: ChatRequest['persona'], brand: ChatRequest['brand']): string {
-  return template
-    .replace(/{persona_name}/g, persona.name)
-    .replace(/{persona_description}/g, persona.description)
-    .replace(/{brand_name}/g, brand.name)
-    .replace(/{brand_description}/g, brand.description)
-    .replace(/{brand_tone}/g, brand.tone);
-}
+// function replacePromptVariables(template: string, persona: ChatRequest['persona'], brand: ChatRequest['brand']): string {
+//   return template
+//     .replace(/{persona_name}/g, persona.name)
+//     .replace(/{persona_description}/g, persona.description)
+//     .replace(/{brand_name}/g, brand.name)
+//     .replace(/{brand_description}/g, brand.description)
+//     .replace(/{brand_tone}/g, brand.tone);
+// }
 
 // Fallback system prompt (original hardcoded version)
 function createFallbackSystemPrompt(persona: ChatRequest['persona'], brand: ChatRequest['brand']): string {
