@@ -258,35 +258,47 @@ export default function SuperAdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-700 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="text-gray-400 hover:text-white">
-              ← Back to Platform
-            </Link>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-4.25 4.25a1 1 0 01-1.414-1.414L8.586 12.5A6 6 0 1118 8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/>
-                </svg>
+      {/* Navigation Header */}
+      <nav className="bg-gray-800 border-b border-gray-700">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Link href="/" className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">AI</span>
+                </div>
+                <h1 className="text-xl font-bold text-white">ElevateAI</h1>
+              </Link>
+              <span className="text-gray-500 mx-2">/</span>
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 bg-red-600 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-4.25 4.25a1 1 0 01-1.414-1.414L8.586 12.5A6 6 0 1118 8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/>
+                  </svg>
+                </div>
+                <span className="text-red-400 font-semibold">Super Admin</span>
               </div>
-              <h1 className="text-2xl font-bold">Super Admin Dashboard</h1>
             </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="px-3 py-1 bg-red-900 text-red-300 rounded-full text-sm">
-              System-Level Access
+            <div className="flex items-center gap-4">
+              <div className="px-3 py-1 bg-red-900 text-red-300 rounded-full text-sm">
+                System-Level Access
+              </div>
+              <Link href="/about" className="text-gray-400 hover:text-white transition-colors">
+                About
+              </Link>
+              <Link href="/admin" className="text-gray-400 hover:text-blue-400 transition-colors">
+                Admin
+              </Link>
+              <button
+                onClick={() => setIsAuthenticated(false)}
+                className="px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                Logout
+              </button>
             </div>
-            <button
-              onClick={() => setIsAuthenticated(false)}
-              className="px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-            >
-              Logout
-            </button>
           </div>
         </div>
-      </div>
+      </nav>
 
       {/* Tab Navigation */}
       <div className="bg-gray-800 border-b border-gray-700 px-6">

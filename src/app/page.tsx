@@ -1,184 +1,343 @@
-export default function Home() {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="max-w-6xl mx-auto px-4 py-16">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-6">
-            ⚡ AI-Powered Brand & Marketing Solutions
-          </div>
-          
-          <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-6">
-            ElevateAI Platform
-          </h1>
-          
-          <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-            Revolutionize your brand and marketing workflow with our comprehensive suite of AI-powered tools designed to enhance creativity, streamline processes, and deliver exceptional results for your campaigns.
-          </p>
-        </div>
+'use client';
 
-        {/* Tools Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* AdCritic */}
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-300">
-            <div className="p-8">
-              <div className="flex items-start justify-between mb-6">
-                <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center">
-                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
-                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+import { useEffect, useRef } from 'react';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import MouseCursor from '@/components/MouseCursor';
+
+export default function Home() {
+  const heroRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Add custom cursor to body
+    document.body.style.cursor = 'none';
+    
+    // Intersection Observer for animations
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-fade-in-up');
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    // Observe all animatable elements
+    document.querySelectorAll('[data-animate]').forEach((el) => {
+      observer.observe(el);
+    });
+
+    return () => {
+      observer.disconnect();
+      document.body.style.cursor = 'auto';
+    };
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <MouseCursor />
+      <Header />
+      
+      {/* Hero Section */}
+      <main className="pt-24">
+        {/* Hero */}
+        <section ref={heroRef} className="relative px-6 py-24 overflow-hidden">
+          {/* Background Elements */}
+          <div className="absolute inset-0">
+            <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl animate-float"></div>
+            <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-float" style={{animationDelay: '1s'}}></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-128 h-128 bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-full blur-3xl"></div>
+          </div>
+
+          <div className="container mx-auto text-center relative z-10">
+            <div className="max-w-4xl mx-auto animate-stagger">
+              {/* Badge */}
+              <div className="inline-flex items-center px-6 py-3 bg-white/80 backdrop-blur-xl border border-blue-200/50 rounded-full text-blue-700 font-medium mb-8 shadow-lg hover:shadow-xl transition-all cursor-interactive">
+                <span className="w-2 h-2 bg-blue-500 rounded-full mr-3 animate-pulse"></span>
+                ⚡ AI-Powered Brand & Marketing Solutions
+              </div>
+
+              {/* Main Heading */}
+              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight">
+                <span className="text-gradient">Elevate</span>
+                <br />
+                <span className="text-slate-900">Your Brand</span>
+              </h1>
+
+              {/* Subheading */}
+              <p className="text-xl md:text-2xl text-slate-600 mb-12 leading-relaxed max-w-3xl mx-auto">
+                Revolutionize your marketing workflow with our comprehensive suite of AI-powered tools designed to enhance creativity, streamline processes, and deliver exceptional results.
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+                <a
+                  href="/ad-critic"
+                  className="bg-gradient-primary text-white px-8 py-4 rounded-2xl font-semibold text-lg hover:-translate-y-1 transition-all duration-300 shadow-xl hover:shadow-2xl cursor-interactive"
+                >
+                  Start with Ad Critic →
+                </a>
+                <a
+                  href="/brandchat"
+                  className="bg-white/80 backdrop-blur-xl text-slate-800 px-8 py-4 rounded-2xl font-semibold text-lg border border-slate-200 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl cursor-interactive"
+                >
+                  Try BrandChat
+                </a>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-2xl mx-auto">
+                <div className="text-center" data-animate>
+                  <div className="text-3xl font-bold text-slate-900 mb-2">70%</div>
+                  <div className="text-slate-600">Faster Revisions</div>
+                </div>
+                <div className="text-center" data-animate>
+                  <div className="text-3xl font-bold text-slate-900 mb-2">10x</div>
+                  <div className="text-slate-600">Better Performance</div>
+                </div>
+                <div className="text-center" data-animate>
+                  <div className="text-3xl font-bold text-slate-900 mb-2">95%</div>
+                  <div className="text-slate-600">Client Satisfaction</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Products Section */}
+        <section className="px-6 py-24 bg-white">
+          <div className="container mx-auto">
+            <div className="text-center mb-20">
+              <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6" data-animate>
+                Powerful AI Tools for
+                <span className="text-gradient"> Every Campaign</span>
+              </h2>
+              <p className="text-xl text-slate-600 max-w-3xl mx-auto" data-animate>
+                From ad critique to brand voice simulation, our suite of AI tools covers every aspect of your marketing workflow.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* AdCritic */}
+              <div className="card hover-lift p-8 group cursor-interactive" data-animate>
+                <div className="mb-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium text-green-600">Live & Active</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-green-600 font-medium">Active</span>
-                </div>
-              </div>
-              
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">AdCritic</h3>
-              
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                Get instant, demographic-tailored critiques on your ads to cut revision cycles by 70%, boost campaign performance, and wow clients with data-backed creatives that convert—saving...
-              </p>
-              
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
-                <div className="flex items-center gap-2 mb-2">
-                  <svg className="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
-                  </svg>
-                  <span className="text-sm font-semibold text-orange-800">Early Beta</span>
-                </div>
-                <p className="text-sm text-orange-700">
-                  This is an early beta version. Use sparingly and always provide feedback. Be flexible as we continue to improve.
+
+                <h3 className="text-2xl font-bold text-slate-900 mb-4">AdCritic</h3>
+                <p className="text-slate-600 mb-6 leading-relaxed">
+                  Get instant, demographic-tailored critiques on your ads. Cut revision cycles by 70%, boost campaign performance, and wow clients with data-backed creatives that convert.
                 </p>
-              </div>
-              
-              <div className="space-y-2 mb-8">
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">Demographic Targeting</span>
-                  <span className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">Performance Boost</span>
+
+                <div className="space-y-3 mb-8">
+                  <div className="flex items-center gap-3 text-sm text-slate-700">
+                    <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Demographic-specific analysis
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-slate-700">
+                    <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Real-time performance scoring
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-slate-700">
+                    <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Actionable improvement suggestions
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">Data-Backed Insights</span>
-                </div>
+
+                <a
+                  href="/ad-critic"
+                  className="block w-full bg-gradient-primary text-white text-center py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all cursor-interactive"
+                >
+                  Launch AdCritic →
+                </a>
               </div>
-              
+
+              {/* BrandChat */}
+              <div className="card hover-lift p-8 group cursor-interactive" data-animate>
+                <div className="mb-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                  </div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium text-green-600">Live & Active</span>
+                  </div>
+                </div>
+
+                <h3 className="text-2xl font-bold text-slate-900 mb-4">BrandChat</h3>
+                <p className="text-slate-600 mb-6 leading-relaxed">
+                  Simulate real conversations with your target audience personas, infused with your brand&apos;s voice. Test messaging in minutes and ensure personalized content resonates.
+                </p>
+
+                <div className="space-y-3 mb-8">
+                  <div className="flex items-center gap-3 text-sm text-slate-700">
+                    <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Persona simulation
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-slate-700">
+                    <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Brand voice consistency
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-slate-700">
+                    <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Message resonance testing
+                  </div>
+                </div>
+
+                <a
+                  href="/brandchat"
+                  className="block w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white text-center py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all cursor-interactive"
+                >
+                  Launch BrandChat →
+                </a>
+              </div>
+
+              {/* LegalLens */}
+              <div className="card hover-lift p-8 group cursor-interactive" data-animate>
+                <div className="mb-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  </div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium text-yellow-600">Coming Soon</span>
+                  </div>
+                </div>
+
+                <h3 className="text-2xl font-bold text-slate-900 mb-4">LegalLens</h3>
+                <p className="text-slate-600 mb-6 leading-relaxed">
+                  Pre-scan ads against client-specific legal requirements to avoid costly revisions and delays. Score compliance in seconds and streamline approvals.
+                </p>
+
+                <div className="space-y-3 mb-8">
+                  <div className="flex items-center gap-3 text-sm text-slate-700">
+                    <svg className="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Compliance scoring
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-slate-700">
+                    <svg className="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Risk prevention
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-slate-700">
+                    <svg className="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Legal protection
+                  </div>
+                </div>
+
+                <button className="w-full bg-gradient-to-r from-purple-600 to-violet-600 text-white py-3 px-6 rounded-xl font-semibold opacity-60 cursor-not-allowed">
+                  Coming Soon
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section className="px-6 py-24 bg-gradient-to-br from-slate-900 to-slate-800 text-white">
+          <div className="container mx-auto">
+            <div className="text-center mb-20">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6" data-animate>
+                Built for Modern Marketing Teams
+              </h2>
+              <p className="text-xl text-slate-400 max-w-3xl mx-auto" data-animate>
+                Our AI tools integrate seamlessly into your existing workflow, providing instant insights and actionable recommendations.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="text-center p-6" data-animate>
+                <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Lightning Fast</h3>
+                <p className="text-slate-400">Get results in seconds, not hours. Our AI processes and analyzes at unprecedented speed.</p>
+              </div>
+
+              <div className="text-center p-6" data-animate>
+                <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 00-2-2z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Data-Driven</h3>
+                <p className="text-slate-400">Every recommendation is backed by comprehensive analysis and proven performance data.</p>
+              </div>
+
+              <div className="text-center p-6" data-animate>
+                <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Fully Customizable</h3>
+                <p className="text-slate-400">Tailor every tool to your brand&apos;s unique voice, audience, and requirements.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="px-6 py-24 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+          <div className="container mx-auto text-center">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6" data-animate>
+              Ready to Elevate Your Marketing?
+            </h2>
+            <p className="text-xl mb-12 max-w-2xl mx-auto opacity-90" data-animate>
+              Join thousands of marketing professionals who are already using ElevateAI to create better campaigns faster.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center" data-animate>
               <a
                 href="/ad-critic"
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-6 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 text-center inline-block"
+                className="bg-white text-blue-600 px-8 py-4 rounded-2xl font-semibold text-lg hover:-translate-y-1 transition-all duration-300 shadow-xl hover:shadow-2xl cursor-interactive"
               >
-                Launch AdCritic
+                Get Started Free
               </a>
-            </div>
-          </div>
-
-          {/* BrandChat */}
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-300">
-            <div className="p-8">
-              <div className="flex items-start justify-between mb-6">
-                <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center">
-                  <div className="w-6 h-6 bg-green-600 rounded-lg flex items-center justify-center">
-                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd"/>
-                    </svg>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-green-600 font-medium">Active</span>
-                </div>
-              </div>
-              
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">BrandChat</h3>
-              
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                Simulate real conversations with your target audience personas, infused with your brand&apos;s voice, to test messaging in minutes—reducing client churn by ensuring personalized content...
-              </p>
-              
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
-                <div className="flex items-center gap-2 mb-2">
-                  <svg className="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
-                  </svg>
-                  <span className="text-sm font-semibold text-orange-800">Early Beta</span>
-                </div>
-                <p className="text-sm text-orange-700">
-                  This is an early beta version. Use sparingly and always provide feedback. Be flexible as we continue to improve.
-                </p>
-              </div>
-              
-              <div className="space-y-2 mb-8">
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">Persona Simulation</span>
-                  <span className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">Brand Voice Testing</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">Message Resonance</span>
-                </div>
-              </div>
-              
               <a
-                href="/brandchat"
-                className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 px-6 rounded-xl font-semibold hover:from-green-700 hover:to-green-800 transition-all duration-200 text-center inline-block"
+                href="/admin"
+                className="bg-white/20 backdrop-blur-xl text-white px-8 py-4 rounded-2xl font-semibold text-lg border border-white/30 hover:-translate-y-1 transition-all duration-300 cursor-interactive"
               >
-                Launch BrandChat
+                View Admin Panel
               </a>
             </div>
           </div>
-
-          {/* LegalLens */}
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-300">
-            <div className="p-8">
-              <div className="flex items-start justify-between mb-6">
-                <div className="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center">
-                  <div className="w-6 h-6 bg-purple-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
-                    </svg>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                  <span className="text-sm text-orange-600 font-medium">Early Preview</span>
-                </div>
-              </div>
-              
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">LegalLens</h3>
-              
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                Pre-scan ads against client-specific legal requirements to avoid costly revisions and delays, scoring compliance in seconds—streamlining approvals, minimizing fines or...
-              </p>
-              
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
-                <div className="flex items-center gap-2 mb-2">
-                  <svg className="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
-                  </svg>
-                  <span className="text-sm font-semibold text-orange-800">Early Beta</span>
-                </div>
-                <p className="text-sm text-orange-700">
-                  This is an early beta version. Use sparingly and always provide feedback. Be flexible as we continue to improve.
-                </p>
-              </div>
-              
-              <div className="space-y-2 mb-8">
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">Compliance Scoring</span>
-                  <span className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">Risk Prevention</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">Legal Protection</span>
-                </div>
-              </div>
-              
-              <button className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white py-3 px-6 rounded-xl font-semibold hover:from-purple-700 hover:to-purple-800 transition-all duration-200">
-                Sign in to access
-              </button>
-            </div>
-          </div>
-        </div>
+        </section>
       </main>
+
+      <Footer />
     </div>
   );
 }

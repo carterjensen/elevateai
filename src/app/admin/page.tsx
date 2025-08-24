@@ -187,23 +187,37 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="text-gray-600 hover:text-gray-900">
-              ← Back to Platform
-            </Link>
-            <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+      {/* Navigation Header */}
+      <nav className="bg-white border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Link href="/" className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">AI</span>
+                </div>
+                <h1 className="text-xl font-bold text-gray-900">ElevateAI</h1>
+              </Link>
+              <span className="text-gray-400 mx-2">/</span>
+              <span className="text-blue-600 font-semibold">Admin Dashboard</span>
+            </div>
+            <div className="flex items-center gap-6">
+              <Link href="/about" className="text-gray-600 hover:text-gray-900 transition-colors">
+                About
+              </Link>
+              <Link href="/superadmin" className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-semibold">
+                Super Admin
+              </Link>
+              <button
+                onClick={() => setIsAuthenticated(false)}
+                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                Logout
+              </button>
+            </div>
           </div>
-          <button
-            onClick={() => setIsAuthenticated(false)}
-            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            Logout
-          </button>
         </div>
-      </div>
+      </nav>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Admin Navigation */}
