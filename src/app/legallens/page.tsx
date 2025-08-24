@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 
 interface ComplianceViolation {
@@ -17,6 +17,15 @@ interface ComplianceWarning {
   category: string;
   description: string;
   recommendation: string;
+}
+
+interface LegalClient {
+  id: string;
+  name: string;
+  industry: string;
+  description: string;
+  icon: string;
+  compliance_areas: string[];
 }
 
 interface AnalysisResult {
@@ -58,10 +67,64 @@ function getScoreLabel(score: number): string {
   return 'High Risk';
 }
 
+// Demo legal clients - in production these would come from database
+const demoLegalClients: LegalClient[] = [
+  {
+    id: 'healthcare-pharma',
+    name: 'Healthcare & Pharma',
+    industry: 'Healthcare',
+    description: 'Medical devices, pharmaceutical products, and health services',
+    icon: '🏥',
+    compliance_areas: ['FDA regulations', 'HIPAA compliance', 'Medical advertising standards', 'Drug promotion rules']
+  },
+  {
+    id: 'financial-services',
+    name: 'Financial Services',
+    industry: 'Finance',
+    description: 'Banking, insurance, investment services, and fintech',
+    icon: '🏦',
+    compliance_areas: ['Truth in Lending', 'Fair Credit Reporting', 'Securities regulations', 'Consumer protection']
+  },
+  {
+    id: 'food-beverage',
+    name: 'Food & Beverage',
+    industry: 'Consumer Goods',
+    description: 'Food products, beverages, and nutritional supplements',
+    icon: '🍎',
+    compliance_areas: ['Nutritional claims', 'FDA food labeling', 'Organic certification', 'Allergen warnings']
+  },
+  {
+    id: 'automotive',
+    name: 'Automotive',
+    industry: 'Manufacturing',
+    description: 'Vehicle manufacturers and automotive services',
+    icon: '🚗',
+    compliance_areas: ['Safety standards', 'Fuel economy claims', 'Emissions regulations', 'Warranty disclosures']
+  },
+  {
+    id: 'retail-ecommerce',
+    name: 'Retail & E-commerce',
+    industry: 'Retail',
+    description: 'Online and offline retail, consumer products',
+    icon: '🛒',
+    compliance_areas: ['Consumer protection', 'Privacy policies', 'Return policies', 'Advertising standards']
+  },
+  {
+    id: 'general-business',
+    name: 'General Business',
+    industry: 'General',
+    description: 'Standard business advertising and marketing compliance',
+    icon: '🏢',
+    compliance_areas: ['FTC guidelines', 'Truth in advertising', 'Endorsement rules', 'Privacy regulations']
+  }
+];
+
 export default function LegalLens() {
   const [analysisType, setAnalysisType] = useState<'text' | 'image' | 'video'>('text');
   const [textContent, setTextContent] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedClient, setSelectedClient] = useState<LegalClient>(demoLegalClients[5]); // Default to General Business
+  const [showClientDropdown, setShowClientDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -139,7 +202,9 @@ export default function LegalLens() {
         body: JSON.stringify({
           type: analysisType,
           content,
-          filename
+          filename,
+          clientId: selectedClient.id,
+          clientProfile: selectedClient
         })
       });
 
@@ -170,19 +235,20 @@ export default function LegalLens() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* Navigation Header */}
-      <nav className="bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-6 py-4">
+      <nav className="nav-primary border-b">
+        <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Link href="/" className="flex items-center gap-2">
+            {/* Left side - Brand and client dropdown */}
+            <div className="flex items-center gap-6">
+              <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-sm">AI</span>
                 </div>
-                <h1 className="text-xl font-bold text-gray-900">ElevateAI</h1>
+                <h1 className="text-xl font-bold">ElevateAI</h1>
               </Link>
-              <span className="text-gray-400 mx-2">/</span>
+              
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center">
                   <svg className="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
@@ -191,43 +257,110 @@ export default function LegalLens() {
                 </div>
                 <span className="text-purple-600 font-semibold">LegalLens</span>
               </div>
+
+              {/* Client Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowClientDropdown(!showClientDropdown)}
+                  className="flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors border-2 border-purple-200"
+                >
+                  <span>{selectedClient.icon}</span>
+                  <span className="font-medium">{selectedClient.name}</span>
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd"/>
+                  </svg>
+                </button>
+                
+                {showClientDropdown && (
+                  <div className="absolute top-full left-0 mt-2 w-96 bg-white border border-gray-200 rounded-lg shadow-xl z-20">
+                    <div className="p-2 max-h-96 overflow-y-auto">
+                      <div className="text-sm font-semibold text-gray-900 px-3 py-2">Choose Legal Profile</div>
+                      {demoLegalClients.map((client) => (
+                        <button
+                          key={client.id}
+                          onClick={() => {
+                            setSelectedClient(client);
+                            setShowClientDropdown(false);
+                          }}
+                          className={`w-full text-left px-3 py-3 rounded-lg hover:bg-gray-100 transition-colors ${
+                            selectedClient.id === client.id ? 'bg-purple-50 border-l-4 border-purple-400' : ''
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <span className="text-xl">{client.icon}</span>
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900">{client.name}</div>
+                              <div className="text-sm text-gray-600">{client.description}</div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                Areas: {client.compliance_areas.slice(0, 3).join(', ')}
+                                {client.compliance_areas.length > 3 && ` +${client.compliance_areas.length - 3} more`}
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                      <div className="border-t border-gray-200 mt-2 pt-2">
+                        <Link 
+                          href="/admin/legal" 
+                          onClick={() => setShowClientDropdown(false)}
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                          Add New Legal Profile
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-            
-            <div className="flex items-center gap-4">
-              <Link href="/about" className="text-gray-600 hover:text-gray-900 transition-colors">
-                About
-              </Link>
-              <Link href="/admin" className="text-gray-600 hover:text-blue-600 transition-colors">
-                Admin
-              </Link>
-              <Link href="/admin/legal" className="text-gray-600 hover:text-purple-600 transition-colors">
-                Legal Admin
-              </Link>
-              <Link href="/superadmin" className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-semibold">
-                Super Admin
-              </Link>
+
+            {/* Right side - Navigation */}
+            <div className="flex items-center gap-6">
+              <Link href="/brandchat" className="nav-link">BrandChat</Link>
+              <Link href="/ad-critic" className="nav-link">AdCritic</Link>
+              <Link href="/admin" className="nav-link">Admin</Link>
+              <Link href="/admin/legal" className="nav-link">Legal Admin</Link>
+              <Link href="/superadmin" className="btn btn-secondary text-sm">Super Admin</Link>
             </div>
           </div>
         </div>
       </nav>
 
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <main className="max-w-6xl mx-auto px-6 py-12">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-16 animate-fade-in">
           <div className="inline-flex items-center px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-medium mb-6">
             🏛️ Legal Compliance Analysis
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
-            LegalLens
+          <h1 className="text-5xl font-bold mb-6">
+            <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              LegalLens
+            </span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Analyze your advertising content against legal compliance rules. Get instant feedback with a compliance score out of 100.
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-6">
+            Analyze your advertising content against <span className="font-semibold text-purple-600">{selectedClient.name}</span> legal compliance rules.
           </p>
+          <div className="flex flex-wrap justify-center gap-2 text-sm text-gray-500">
+            <span>Compliance Areas:</span>
+            {selectedClient.compliance_areas.slice(0, 4).map((area, index) => (
+              <span key={area} className="px-2 py-1 bg-purple-50 text-purple-600 rounded-full">
+                {area}
+              </span>
+            ))}
+            {selectedClient.compliance_areas.length > 4 && (
+              <span className="px-2 py-1 bg-gray-50 text-gray-500 rounded-full">
+                +{selectedClient.compliance_areas.length - 4} more
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Input Section */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-8">
+          <div className="card p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Content Analysis</h2>
 
             {/* Content Type Selector */}
@@ -340,7 +473,7 @@ export default function LegalLens() {
             <button
               onClick={analyzeContent}
               disabled={loading}
-              className="w-full py-3 px-6 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="btn btn-primary w-full text-lg py-4 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <div className="flex items-center justify-center gap-2">
@@ -348,34 +481,36 @@ export default function LegalLens() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                     <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
                   </svg>
-                  Analyzing...
+                  Analyzing Content...
                 </div>
               ) : (
-                'Analyze Content'
+                'Analyze Content →'
               )}
             </button>
 
             {error && (
-              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <div className="flex items-center gap-2 text-red-800">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <div className="card mt-6 p-6 border-l-4 border-red-500 bg-red-50">
+                <div className="flex items-center gap-3">
+                  <svg className="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
                   </svg>
-                  <span className="font-semibold">Analysis Error:</span>
+                  <div>
+                    <div className="font-semibold text-red-800">Analysis Error</div>
+                    <div className="text-red-700">{error}</div>
+                  </div>
                 </div>
-                <p className="mt-1 text-red-700">{error}</p>
               </div>
             )}
           </div>
 
           {/* Results Section */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-8">
+          <div className="card p-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-900">Compliance Analysis</h2>
               {result && (
                 <button
                   onClick={resetAnalysis}
-                  className="text-gray-600 hover:text-gray-800 text-sm"
+                  className="btn btn-ghost text-sm"
                 >
                   Clear Results
                 </button>
@@ -490,7 +625,7 @@ export default function LegalLens() {
             )}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

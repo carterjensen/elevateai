@@ -207,9 +207,14 @@ export async function loadActivePrompts(): Promise<SystemPrompt[]> {
 export async function saveActivePrompts(prompts: SystemPrompt[]): Promise<void> {
   try {
     await ensureStorageDir();
+    console.log(`Saving prompts to: ${PROMPTS_FILE}`);
+    console.log(`Number of prompts: ${prompts.length}`);
     await writeFile(PROMPTS_FILE, JSON.stringify(prompts, null, 2));
+    console.log('Prompts saved successfully');
   } catch (error) {
     console.error('Error saving active prompts:', error);
+    console.error('Prompts file path:', PROMPTS_FILE);
+    console.error('Storage directory exists:', require('fs').existsSync(require('path').dirname(PROMPTS_FILE)));
     throw error;
   }
 }
@@ -222,15 +227,21 @@ export async function getPromptForTarget(targetId: string | null, type: 'persona
 
 // Update a specific prompt
 export async function updatePrompt(promptId: string, updates: Partial<SystemPrompt>): Promise<SystemPrompt | null> {
+  console.log(`Updating prompt with ID: ${promptId}`);
+  console.log('Updates:', updates);
+  
   const prompts = await loadActivePrompts();
   const promptIndex = prompts.findIndex(p => p.id === promptId);
   
   if (promptIndex === -1) {
+    console.error(`Prompt not found with ID: ${promptId}`);
     return null;
   }
   
   // Ensure critical fields are preserved and valid
   const currentPrompt = prompts[promptIndex];
+  console.log('Current prompt:', currentPrompt);
+  
   const updatedPrompt: SystemPrompt = {
     id: currentPrompt.id,
     name: updates.name || currentPrompt.name || '',
@@ -243,8 +254,16 @@ export async function updatePrompt(promptId: string, updates: Partial<SystemProm
     updated_at: new Date().toISOString()
   };
   
+  console.log('Updated prompt:', updatedPrompt);
   prompts[promptIndex] = updatedPrompt;
-  await saveActivePrompts(prompts);
+  
+  try {
+    await saveActivePrompts(prompts);
+    console.log('Successfully updated and saved prompt');
+  } catch (error) {
+    console.error('Failed to save prompt:', error);
+    throw error;
+  }
   
   return updatedPrompt;
 }

@@ -116,14 +116,19 @@ export default function SuperAdminDashboard() {
         })
       });
 
-      if (!response.ok) throw new Error('Failed to save prompt');
+      const result = await response.json();
+      console.log('Save response:', result);
+
+      if (!response.ok) {
+        throw new Error(result.error || `HTTP ${response.status}: Failed to save prompt`);
+      }
       
       await loadPrompts();
       setSelectedPrompt(prev => prev ? {...prev, prompt_template: editedPrompt} : null);
       alert('Prompt saved successfully!');
     } catch (error) {
       console.error('Error saving prompt:', error);
-      alert('Error saving prompt');
+      alert(`Error saving prompt: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
