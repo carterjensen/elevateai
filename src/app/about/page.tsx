@@ -188,8 +188,8 @@ export default function About() {
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">LegalLens</h2>
-                <div className="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold mb-4">
-                  🔮 Early Preview
+                <div className="inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold mb-4">
+                  ✅ Active
                 </div>
               </div>
             </div>
@@ -198,16 +198,75 @@ export default function About() {
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Core Methodology</h3>
                 <p className="text-gray-600 leading-relaxed">
-                  LegalLens will provide pre-compliance scanning for advertisements against client-specific legal requirements, helping prevent costly revisions and regulatory issues.
+                  LegalLens provides comprehensive legal compliance analysis for advertising content across multiple media types. The system uses AI-powered analysis to evaluate content against a database of legal compliance rules and regulations.
                 </p>
+                <ul className="mt-3 space-y-2 text-gray-600">
+                  <li className="flex items-start gap-2">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
+                    <span><strong>Multi-Modal Analysis:</strong> Text analysis via GPT-4, image analysis via GPT-4 Vision, video analysis via Gemini AI</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
+                    <span><strong>Scoring System:</strong> 0-100 compliance score with detailed violation and warning breakdowns</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
+                    <span><strong>Rule-Based Engine:</strong> Configurable legal compliance rules across multiple categories and severity levels</span>
+                  </li>
+                </ul>
               </div>
               
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Current Status</h3>
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                  <p className="text-sm text-purple-800">
-                    <strong>Early Preview:</strong> LegalLens is in the conceptual phase. Methodology and technical implementation details will be added as development begins.
-                  </p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Legal Compliance Categories</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {[
+                    { name: 'FDA Health Claims', severity: 'critical', category: 'Health & Medical' },
+                    { name: 'FTC Truth in Advertising', severity: 'high', category: 'General Compliance' },
+                    { name: 'Financial Services', severity: 'critical', category: 'Financial' },
+                    { name: 'COPPA (Children)', severity: 'high', category: 'Children\'s Advertising' },
+                    { name: 'Alcohol & Tobacco', severity: 'critical', category: 'Restricted Products' },
+                    { name: 'Privacy & Data Protection', severity: 'high', category: 'Privacy' }
+                  ].map((rule, index) => (
+                    <div key={index} className="bg-gray-50 rounded-lg p-3">
+                      <div className="text-sm font-semibold text-gray-900 mb-1">{rule.name}</div>
+                      <div className="text-xs text-gray-600 mb-1">{rule.category}</div>
+                      <span className={`px-2 py-1 text-xs font-medium rounded ${
+                        rule.severity === 'critical' ? 'bg-red-100 text-red-800' :
+                        rule.severity === 'high' ? 'bg-orange-100 text-orange-800' :
+                        'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {rule.severity.toUpperCase()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Analysis Workflow</h3>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <ol className="space-y-2 text-sm text-gray-700">
+                    <li><strong>1. Content Ingestion:</strong> Accept text, images (JPG/PNG), or video files for analysis</li>
+                    <li><strong>2. Rule Retrieval:</strong> Fetch active legal compliance rules from database</li>
+                    <li><strong>3. AI Analysis:</strong> Process content against rules using appropriate AI model (GPT-4/Gemini)</li>
+                    <li><strong>4. Scoring & Classification:</strong> Generate 0-100 score with violations and warnings</li>
+                    <li><strong>5. Report Generation:</strong> Provide actionable recommendations and specific issue identification</li>
+                    <li><strong>6. Result Caching:</strong> Store analysis for future reference and performance optimization</li>
+                  </ol>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Technical Implementation</h3>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <ul className="space-y-2 text-sm text-gray-600">
+                    <li>• Administrative interface for managing custom legal compliance rules</li>
+                    <li>• Multi-AI integration: OpenAI GPT-4 (text/image) + Google Gemini (video)</li>
+                    <li>• Supabase backend for rule storage and analysis history</li>
+                    <li>• Real-time compliance scoring with detailed violation breakdowns</li>
+                    <li>• Content hash-based caching for performance optimization</li>
+                    <li>• Severity-based rule categorization (low, medium, high, critical)</li>
+                  </ul>
                 </div>
               </div>
             </div>

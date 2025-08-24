@@ -222,6 +222,23 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Admin Navigation */}
         <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Link href="/admin/legal" className="bg-white p-6 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Legal Compliance</h3>
+                <p className="text-gray-600 text-sm">Manage legal rules and compliance settings</p>
+              </div>
+            </div>
+          </Link>
+        </div>
+
+        {/* Original Admin Cards */}
+        <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link
             href="/admin/demographics"
             className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
