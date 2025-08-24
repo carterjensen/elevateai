@@ -2,21 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
-
-interface Brand {
-  id: string;
-  name: string;
-  description: string;
-  industry: string;
-  tone: string;
-  logo: string;
-  brand_values: string[];
-  target_demographics: string[];
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
+import { Brand } from '@/lib/sampleData';
 
 interface Demographic {
   id: string;
@@ -36,11 +22,8 @@ export default function BrandsAdmin() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    industry: '',
     tone: '',
     logo: '',
-    brand_values: [''],
-    target_demographics: [] as string[],
     is_active: true
   });
 
@@ -66,17 +49,18 @@ export default function BrandsAdmin() {
     }
   };
 
-  // Load all brands from Supabase
+  // Load all brands from API
   const loadBrands = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('brands')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const response = await fetch('/api/admin/brands');
+      const result = await response.json();
       
-      if (error) throw error;
-      setBrands(data || []);
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to load brands');
+      }
+      
+      setBrands(result.data || []);
     } catch (error) {
       console.error('Error loading brands:', error);
     } finally {

@@ -207,44 +207,71 @@ export default function AdCritic() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <div className="text-xl font-medium text-gray-700">Loading Ad Critic...</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center animate-fade-in">
+          <div className="w-16 h-16 bg-gradient-to-r from-orange-600 to-red-500 rounded-2xl flex items-center justify-center mb-6 animate-pulse">
+            <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 01-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 010-2h4a1 1 0 011 1v4a1 1 0 01-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12zm-9 7a1 1 0 012 0v1.586l2.293-2.293a1 1 0 111.414 1.414L6.414 15H8a1 1 0 010 2H4a1 1 0 01-1-1v-4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 010-2h1.586l-2.293-2.293a1 1 0 111.414-1.414L15.586 13V12a1 1 0 011-1z" clipRule="evenodd"/>
+            </svg>
+          </div>
+          <div className="text-2xl font-semibold text-gray-900 mb-2">Loading Ad Critic</div>
+          <div className="text-gray-600">Preparing your advertisement analysis tools...</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Simple Header */}
-      <header className="bg-white border-b">
-        <div className="max-w-6xl mx-auto px-4 py-4">
+    <div className="min-h-screen">
+      {/* Navigation Header */}
+      <nav className="nav-primary">
+        <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">AI</span>
+            <div className="flex items-center gap-2">
+              <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">AI</span>
+                </div>
+                <h1 className="text-xl font-bold">ElevateAI</h1>
+              </Link>
+              <span className="text-gray-400 mx-2">/</span>
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 01-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 010-2h4a1 1 0 011 1v4a1 1 0 01-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12zm-9 7a1 1 0 012 0v1.586l2.293-2.293a1 1 0 111.414 1.414L6.414 15H8a1 1 0 010 2H4a1 1 0 01-1-1v-4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 010-2h1.586l-2.293-2.293a1 1 0 111.414-1.414L15.586 13V12a1 1 0 011-1z" clipRule="evenodd"/>
+                  </svg>
+                </div>
+                <span className="text-orange-600 font-semibold">AdCritic</span>
               </div>
-              <h1 className="text-xl font-bold text-gray-900">ElevateAI</h1>
-            </Link>
-            <nav className="flex items-center gap-6">
-              <Link href="/" className="text-gray-600 hover:text-gray-900">
+            </div>
+            
+            <div className="flex items-center gap-6">
+              <Link href="/" className="nav-link">
                 Home
               </Link>
-              <Link href="/admin" className="text-gray-600 hover:text-gray-900">
+              <Link href="/brandchat" className="nav-link">
+                BrandChat
+              </Link>
+              <Link href="/admin" className="nav-link">
                 Admin
               </Link>
-            </nav>
+              <Link href="/superadmin" className="btn btn-secondary text-sm">
+                Super Admin
+              </Link>
+            </div>
           </div>
         </div>
-      </header>
+      </nav>
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Ad Critic</h1>
-          <p className="text-xl text-gray-600">
-            Get AI-powered analysis of your advertisements with demographic insights
+      <main className="max-w-6xl mx-auto px-6 py-12">
+        <div className="text-center mb-16 animate-fade-in">
+          <h1 className="text-5xl font-bold mb-6">
+            <span className="bg-gradient-to-r from-orange-600 to-red-500 bg-clip-text text-transparent">
+              Ad Critic
+            </span>
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Get AI-powered analysis of your advertisements with comprehensive demographic insights and actionable recommendations
           </p>
         </div>
           {!analysisResult ? (
@@ -383,11 +410,14 @@ export default function AdCritic() {
                 <button
                   onClick={analyzeAd}
                   disabled={isAnalyzing || !selectedBrand || selectedDemographics.length === 0 || (!imageUrl && !imageFile)}
-                  className="bg-gradient-primary text-white px-8 py-4 rounded-2xl font-semibold text-lg hover:-translate-y-1 transition-all duration-300 shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none cursor-interactive"
+                  className="btn btn-primary text-lg px-8 py-4 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isAnalyzing ? (
                     <div className="flex items-center gap-3">
-                      <div className="spinner w-5 h-5"></div>
+                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
                       Analyzing Advertisement...
                     </div>
                   ) : (
@@ -561,7 +591,7 @@ export default function AdCritic() {
                 <div className="flex justify-center pt-8">
                   <button
                     onClick={resetAnalysis}
-                    className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-8 py-4 rounded-2xl font-semibold text-lg hover:-translate-y-1 transition-all duration-300 shadow-xl hover:shadow-2xl cursor-interactive"
+                    className="btn btn-primary text-lg px-8 py-4"
                   >
                     Analyze Another Ad →
                   </button>
@@ -571,20 +601,16 @@ export default function AdCritic() {
           )}
 
         {error && (
-          <div className="mt-8 bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="text-red-800">{error}</div>
+          <div className="card mt-8 p-6 border-l-4 border-red-500 bg-red-50">
+            <div className="flex items-center gap-3">
+              <svg className="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
+              </svg>
+              <div className="text-red-800 font-medium">{error}</div>
+            </div>
           </div>
         )}
       </main>
-
-      {/* Simple Footer */}
-      <footer className="bg-white border-t mt-24">
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          <div className="text-center text-gray-600">
-            <p>&copy; 2024 ElevateAI. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

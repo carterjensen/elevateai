@@ -25,39 +25,71 @@ interface Brand {
   logo: string;
 }
 
-const personas: Persona[] = [
-  { id: 'gen-z', name: 'Gen Z Consumer', description: 'Ages 18-26, digital native, values authenticity', emoji: '🎮' },
-  { id: 'millennial', name: 'Millennial Professional', description: 'Ages 27-42, career-focused, brand conscious', emoji: '💼' },
-  { id: 'gen-x', name: 'Gen X Parent', description: 'Ages 43-58, family-oriented, practical', emoji: '👨‍👩‍👧‍👦' },
-  { id: 'boomer', name: 'Baby Boomer', description: 'Ages 59+, traditional values, quality-focused', emoji: '👴' },
-  { id: 'eco-warrior', name: 'Eco-Conscious Consumer', description: 'Sustainability-focused, willing to pay premium for green products', emoji: '🌱' },
-  { id: 'tech-enthusiast', name: 'Tech Early Adopter', description: 'Loves new gadgets, influences others, high disposable income', emoji: '🚀' }
-];
-
-const brands: Brand[] = [
-  { id: 'apple', name: 'Apple', description: 'Premium technology with minimalist design', tone: 'Sleek, innovative, premium', logo: '🍎' },
-  { id: 'nike', name: 'Nike', description: 'Athletic performance and inspiration', tone: 'Motivational, energetic, bold', logo: '👟' },
-  { id: 'tesla', name: 'Tesla', description: 'Sustainable luxury and innovation', tone: 'Futuristic, disruptive, eco-conscious', logo: '⚡' },
-  { id: 'starbucks', name: 'Starbucks', description: 'Community-focused coffee experience', tone: 'Warm, inclusive, experiential', logo: '☕' },
-  { id: 'patagonia', name: 'Patagonia', description: 'Outdoor gear with environmental activism', tone: 'Authentic, rugged, environmentally conscious', logo: '🏔️' },
-  { id: 'netflix', name: 'Netflix', description: 'Entertainment streaming platform', tone: 'Casual, entertaining, binge-worthy', logo: '🎬' }
-];
+// Data will be loaded from centralized APIs
 
 export default function BrandChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
-  const [selectedPersona, setSelectedPersona] = useState<Persona>(personas[0]);
-  const [selectedBrand, setSelectedBrand] = useState<Brand>(brands[0]);
+  const [personas, setPersonas] = useState<Persona[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
+  const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamingText, setStreamingText] = useState('');
   const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'disconnected' | 'error'>('checking');
   const [showPersonaDropdown, setShowPersonaDropdown] = useState(false);
   const [showBrandDropdown, setShowBrandDropdown] = useState(false);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
+  const [dataLoading, setDataLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // Load sample data from APIs
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setDataLoading(true);
+        
+        // Load personas and brands in parallel
+        const [personasResponse, brandsResponse] = await Promise.all([
+          fetch('/api/admin/demographics'),
+          fetch('/api/admin/brands')
+        ]);
+        
+        const personasResult = await personasResponse.json();
+        const brandsResult = await brandsResponse.json();
+        
+        if (personasResult.success && personasResult.data) {
+          // Convert demographics to personas format
+          const personasData = personasResult.data.map((demo: any) => ({
+            id: demo.id,
+            name: demo.name,
+            description: demo.description,
+            emoji: demo.emoji
+          }));
+          setPersonas(personasData);
+          setSelectedPersona(personasData[0]);
+        }
+        
+        if (brandsResult.success && brandsResult.data) {
+          setBrands(brandsResult.data);
+          setSelectedBrand(brandsResult.data[0]);
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+        // Fallback to empty arrays if API fails - user will see loading state
+      } finally {
+        setDataLoading(false);
+      }
+    };
+    
+    loadData();
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
@@ -113,14 +145,16 @@ export default function BrandChat() {
 
       const data = await response.json();
 
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: data.response,
-        role: 'assistant',
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, assistantMessage]);
+      // Use streaming animation
+      animateStreamingText(data.response, (fullText) => {
+        const assistantMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content: fullText,
+          role: 'assistant',
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, assistantMessage]);
+      });
     } catch (error) {
       console.error('Error:', error);
       const errorMessage: Message = {
@@ -142,24 +176,109 @@ export default function BrandChat() {
     }
   };
 
-  const clearChat = () => {
-    setMessages([]);
+  // Fast streaming animation function
+  const animateStreamingText = (text: string, callback: (fullText: string) => void) => {
+    setIsStreaming(true);
+    setStreamingText('');
+    
+    let currentIndex = 0;
+    const interval = setInterval(() => {
+      if (currentIndex < text.length) {
+        setStreamingText(text.slice(0, currentIndex + 1));
+        currentIndex++;
+      } else {
+        clearInterval(interval);
+        setIsStreaming(false);
+        callback(text);
+        setStreamingText('');
+      }
+    }, 15); // Very fast - 15ms per character
   };
 
+  // Export to CSV
+  const exportToCSV = () => {
+    const csvContent = [
+      ['Timestamp', 'Role', 'Persona', 'Brand', 'Content'],
+      ...messages.map(msg => [
+        msg.timestamp.toISOString(),
+        msg.role,
+        msg.role === 'assistant' ? selectedPersona.name : 'User',
+        selectedBrand.name,
+        `"${msg.content.replace(/"/g, '""')}"`
+      ])
+    ].map(row => row.join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `brandchat-${selectedPersona.name}-${selectedBrand.name}-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setShowExportDropdown(false);
+  };
+
+  // Export to Markdown
+  const exportToMarkdown = () => {
+    const mdContent = [
+      `# BrandChat: ${selectedPersona.name} × ${selectedBrand.name}`,
+      ``,
+      `**Date:** ${new Date().toLocaleDateString()}`,
+      `**Persona:** ${selectedPersona.name} (${selectedPersona.description})`,
+      `**Brand:** ${selectedBrand.name} (${selectedBrand.description})`,
+      ``,
+      `---`,
+      ``,
+      ...messages.map(msg => [
+        `## ${msg.role === 'user' ? '👤 User' : `${selectedPersona.emoji} ${selectedPersona.name}`}`,
+        `*${msg.timestamp.toLocaleString()}*`,
+        ``,
+        msg.content,
+        ``
+      ].join('\n'))
+    ].join('\n');
+
+    const blob = new Blob([mdContent], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `brandchat-${selectedPersona.name}-${selectedBrand.name}-${new Date().toISOString().split('T')[0]}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setShowExportDropdown(false);
+  };
+
+
+  // Show loading state while data is loading
+  if (dataLoading || !selectedPersona || !selectedBrand) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 animate-pulse">
+          <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd"/>
+          </svg>
+        </div>
+        <p className="text-gray-600 text-lg">Loading ElevateAI BrandChat...</p>
+        <p className="text-gray-400 text-sm mt-2">Connecting to sample data</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Navigation Header */}
-      <nav className="bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-6 py-4">
+    <div className="min-h-screen flex flex-col">
+      {/* Header with Navigation and Dropdowns */}
+      <header className="nav-primary border-b">
+        <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Link href="/" className="flex items-center gap-2">
+            {/* Left side - Brand and dropdowns */}
+            <div className="flex items-center gap-6">
+              <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-sm">AI</span>
                 </div>
-                <h1 className="text-xl font-bold text-gray-900">ElevateAI</h1>
+                <h1 className="text-xl font-bold">ElevateAI</h1>
               </Link>
-              <span className="text-gray-400 mx-2">/</span>
+              
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center">
                   <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
@@ -168,21 +287,183 @@ export default function BrandChat() {
                 </div>
                 <span className="text-green-600 font-semibold">BrandChat</span>
               </div>
+
+              {/* Persona Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => {
+                    setShowPersonaDropdown(!showPersonaDropdown);
+                    setShowBrandDropdown(false);
+                    setShowExportDropdown(false);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors border-2 border-blue-200"
+                >
+                  <span>{selectedPersona.emoji}</span>
+                  <span className="font-medium">{selectedPersona.name}</span>
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd"/>
+                  </svg>
+                </button>
+                
+                {showPersonaDropdown && (
+                  <div className="absolute top-full left-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-20">
+                    <div className="p-2 max-h-96 overflow-y-auto">
+                      <div className="text-sm font-semibold text-gray-900 px-3 py-2">Choose Persona</div>
+                      {personas.map((persona) => (
+                        <button
+                          key={persona.id}
+                          onClick={() => {
+                            setSelectedPersona(persona);
+                            setShowPersonaDropdown(false);
+                          }}
+                          className={`w-full text-left px-3 py-3 rounded-lg hover:bg-gray-100 transition-colors ${
+                            selectedPersona.id === persona.id ? 'bg-blue-50 border-l-4 border-blue-400' : ''
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <span className="text-xl">{persona.emoji}</span>
+                            <div>
+                              <div className="font-medium text-gray-900">{persona.name}</div>
+                              <div className="text-sm text-gray-600">{persona.description}</div>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                      <div className="border-t border-gray-200 mt-2 pt-2">
+                        <Link 
+                          href="/admin/demographics" 
+                          onClick={() => setShowPersonaDropdown(false)}
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                          Add New Persona
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Brand Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => {
+                    setShowBrandDropdown(!showBrandDropdown);
+                    setShowPersonaDropdown(false);
+                    setShowExportDropdown(false);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors border-2 border-purple-200"
+                >
+                  <span>{selectedBrand.logo}</span>
+                  <span className="font-medium">{selectedBrand.name}</span>
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd"/>
+                  </svg>
+                </button>
+                
+                {showBrandDropdown && (
+                  <div className="absolute top-full left-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-20">
+                    <div className="p-2 max-h-96 overflow-y-auto">
+                      <div className="text-sm font-semibold text-gray-900 px-3 py-2">Choose Brand</div>
+                      {brands.map((brand) => (
+                        <button
+                          key={brand.id}
+                          onClick={() => {
+                            setSelectedBrand(brand);
+                            setShowBrandDropdown(false);
+                          }}
+                          className={`w-full text-left px-3 py-3 rounded-lg hover:bg-gray-100 transition-colors ${
+                            selectedBrand.id === brand.id ? 'bg-purple-50 border-l-4 border-purple-400' : ''
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <span className="text-xl">{brand.logo}</span>
+                            <div>
+                              <div className="font-medium text-gray-900">{brand.name}</div>
+                              <div className="text-sm text-gray-600">{brand.description}</div>
+                              <div className="text-xs text-gray-500 mt-1">Tone: {brand.tone}</div>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                      <div className="border-t border-gray-200 mt-2 pt-2">
+                        <Link 
+                          href="/admin/brands" 
+                          onClick={() => setShowBrandDropdown(false)}
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                          Add New Brand
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          
+
+            {/* Right side - Actions and Export */}
             <div className="flex items-center gap-4">
-              <Link href="/about" className="text-gray-600 hover:text-gray-900 transition-colors">
-                About
-              </Link>
-              <Link href="/admin" className="text-gray-600 hover:text-blue-600 transition-colors">
-                Admin
-              </Link>
-              <Link href="/superadmin" className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-semibold">
-                Super Admin
-              </Link>
-              
+              <button
+                onClick={() => setMessages([])}
+                className="btn btn-ghost"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                New Chat
+              </button>
+
+              {/* Export Dropdown */}
+              {messages.length > 0 && (
+                <div className="relative">
+                  <button
+                    onClick={() => {
+                      setShowExportDropdown(!showExportDropdown);
+                      setShowPersonaDropdown(false);
+                      setShowBrandDropdown(false);
+                    }}
+                    className="btn btn-secondary"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Export Chat
+                  </button>
+                  
+                  {showExportDropdown && (
+                    <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-xl z-20">
+                      <div className="p-2">
+                        <button
+                          onClick={exportToCSV}
+                          className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          Export as CSV
+                        </button>
+                        <button
+                          onClick={exportToMarkdown}
+                          className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                          </svg>
+                          Export as Markdown
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Connection Status */}
-              <div className="flex items-center gap-2 text-sm border-l border-gray-200 pl-4">
+              <div className="flex items-center gap-2 text-sm">
                 <div className={`w-2 h-2 rounded-full ${
                   connectionStatus === 'connected' ? 'bg-green-500' :
                   connectionStatus === 'checking' ? 'bg-yellow-500 animate-pulse' :
@@ -193,211 +474,118 @@ export default function BrandChat() {
                   connectionStatus === 'checking' ? 'text-yellow-600' :
                   'text-red-600'
                 }`}>
-                  {connectionStatus === 'connected' ? 'Grok AI Connected' :
-                   connectionStatus === 'checking' ? 'Connecting...' :
-                   'AI Disconnected'}
+                  {connectionStatus === 'connected' ? 'OpenAI Connected' :
+                   connectionStatus === 'checking' ? 'Connecting to OpenAI...' :
+                   'OpenAI Disconnected'}
                 </span>
               </div>
-              
-              <button
-                onClick={clearChat}
-                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                Clear Chat
-              </button>
+
+              <Link href="/admin" className="nav-link text-sm">Admin</Link>
             </div>
           </div>
         </div>
-      </nav>
+      </header>
 
-      {/* Controls */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-6xl mx-auto flex flex-wrap gap-4">
-          {/* Persona Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                setShowPersonaDropdown(!showPersonaDropdown);
-                setShowBrandDropdown(false);
-              }}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
-            >
-              <span>{selectedPersona.emoji}</span>
-              <span className="font-medium">{selectedPersona.name}</span>
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd"/>
-              </svg>
-            </button>
-            
-            {showPersonaDropdown && (
-              <div className="absolute top-full left-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                <div className="p-2">
-                  <div className="text-sm font-semibold text-gray-900 px-3 py-2">Choose Persona</div>
-                  {personas.map((persona) => (
-                    <button
-                      key={persona.id}
-                      onClick={() => {
-                        setSelectedPersona(persona);
-                        setShowPersonaDropdown(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors ${
-                        selectedPersona.id === persona.id ? 'bg-blue-50' : ''
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <span className="text-xl">{persona.emoji}</span>
-                        <div>
-                          <div className="font-medium text-gray-900">{persona.name}</div>
-                          <div className="text-sm text-gray-600">{persona.description}</div>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+      {/* Main Chat Area */}
+      <div className="chat-main">
+        <div className="chat-messages">
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center animate-fade-in">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 animate-float">
+                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd"/>
+                </svg>
               </div>
-            )}
-          </div>
-
-          {/* Brand Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                setShowBrandDropdown(!showBrandDropdown);
-                setShowPersonaDropdown(false);
-              }}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors"
-            >
-              <span>{selectedBrand.logo}</span>
-              <span className="font-medium">{selectedBrand.name}</span>
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd"/>
-              </svg>
-            </button>
-            
-            {showBrandDropdown && (
-              <div className="absolute top-full left-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                <div className="p-2">
-                  <div className="text-sm font-semibold text-gray-900 px-3 py-2">Choose Brand</div>
-                  {brands.map((brand) => (
-                    <button
-                      key={brand.id}
-                      onClick={() => {
-                        setSelectedBrand(brand);
-                        setShowBrandDropdown(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors ${
-                        selectedBrand.id === brand.id ? 'bg-purple-50' : ''
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <span className="text-xl">{brand.logo}</span>
-                        <div>
-                          <div className="font-medium text-gray-900">{brand.name}</div>
-                          <div className="text-sm text-gray-600">{brand.description}</div>
-                          <div className="text-xs text-gray-500 mt-1">Tone: {brand.tone}</div>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-3">Ready to explore brand insights</h3>
+              <p className="text-gray-600 mb-6 max-w-md">
+                Chat with <span className="font-semibold text-blue-600">{selectedPersona.name}</span> about <span className="font-semibold text-purple-600">{selectedBrand.name}</span> to understand consumer perspectives.
+              </p>
+              <div className="text-sm text-gray-500 max-w-lg">
+                Ask questions about marketing messages, product features, brand positioning, or consumer reactions to get authentic persona-based insights.
               </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Chat Messages */}
-      <div className="flex-1 overflow-hidden">
-        <div className="max-w-4xl mx-auto h-full flex flex-col">
-          <div className="flex-1 overflow-y-auto px-6 py-8">
-            {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-4">
-                  <svg className="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd"/>
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Start a conversation</h3>
-                <p className="text-gray-600 mb-4">
-                  Chat with <span className="font-semibold text-blue-600">{selectedPersona.name}</span> about <span className="font-semibold text-purple-600">{selectedBrand.name}</span>
-                </p>
-                <div className="text-sm text-gray-500 max-w-md">
-                  Ask questions about how this persona would react to marketing messages, product features, or brand positioning.
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {messages.map((message) => (
-                  <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-xs lg:max-w-md xl:max-w-lg ${
-                      message.role === 'user' 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-white border border-gray-200'
-                    } rounded-2xl px-4 py-3 shadow-sm`}>
-                      {message.role === 'assistant' && (
-                        <div className="flex items-center gap-2 mb-2 text-sm text-gray-600">
-                          <span>{selectedPersona.emoji}</span>
-                          <span className="font-medium">{selectedPersona.name}</span>
-                          <span className="text-gray-400">•</span>
-                          <span>{selectedBrand.logo} {selectedBrand.name}</span>
-                        </div>
-                      )}
-                      <div className={`${message.role === 'user' ? 'text-white' : 'text-gray-900'}`}>
-                        {message.content}
-                      </div>
-                    </div>
+            </div>
+          ) : (
+            <>
+              {messages.map((message) => (
+                <div key={message.id} className={`chat-message ${message.role}`}>
+                  <div className={`chat-avatar ${message.role}`}>
+                    {message.role === 'user' ? (
+                      'U'
+                    ) : (
+                      selectedPersona.emoji
+                    )}
                   </div>
-                ))}
-                {isLoading && (
-                  <div className="flex justify-start">
-                    <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3 shadow-sm">
-                      <div className="flex items-center gap-2 mb-2 text-sm text-gray-600">
-                        <span>{selectedPersona.emoji}</span>
+                  <div className="chat-content">
+                    {message.role === 'assistant' && (
+                      <div className="flex items-center gap-2 mb-2 text-sm opacity-75">
                         <span className="font-medium">{selectedPersona.name}</span>
-                        <span className="text-gray-400">•</span>
-                        <span>{selectedBrand.logo} {selectedBrand.name}</span>
+                        <span>•</span>
+                        <span>{selectedBrand.name}</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                      </div>
-                    </div>
+                    )}
+                    {message.content}
                   </div>
-                )}
-                <div ref={messagesEndRef} />
-              </div>
-            )}
-          </div>
+                </div>
+              ))}
+              
+              {(isLoading || isStreaming) && (
+                <div className="chat-message assistant">
+                  <div className="chat-avatar assistant">
+                    {selectedPersona.emoji}
+                  </div>
+                  <div className="chat-content">
+                    <div className="flex items-center gap-2 mb-2 text-sm opacity-75">
+                      <span className="font-medium">{selectedPersona.name}</span>
+                      <span>•</span>
+                      <span>{selectedBrand.name}</span>
+                    </div>
+                    {isStreaming ? (
+                      <div className="streaming-text">
+                        {streamingText}<span className="animate-pulse">|</span>
+                      </div>
+                    ) : (
+                      <div className="typing-indicator">
+                        <div className="typing-dot"></div>
+                        <div className="typing-dot"></div>
+                        <div className="typing-dot"></div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              <div ref={messagesEndRef} />
+            </>
+          )}
+        </div>
 
-          {/* Input Form */}
-          <div className="border-t border-gray-200 bg-white px-6 py-4">
-            <form onSubmit={handleSubmit} className="flex gap-3">
-              <div className="flex-1">
-                <textarea
-                  ref={textareaRef}
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder={`Ask ${selectedPersona.name} about ${selectedBrand.name}...`}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl resize-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  rows={1}
-                  disabled={isLoading}
-                />
-              </div>
+        {/* Input Area */}
+        <div className="chat-input-container">
+          <div className="chat-input-wrapper">
+            <form onSubmit={handleSubmit}>
+              <textarea
+                ref={textareaRef}
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={`Message ${selectedPersona.name} about ${selectedBrand.name}...`}
+                className="chat-input"
+                rows={1}
+                disabled={isLoading}
+              />
               <button
                 type="submit"
                 disabled={!inputMessage.trim() || isLoading}
-                className="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="chat-send-button"
               >
                 {isLoading ? (
-                  <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                 ) : (
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
                   </svg>
                 )}
               </button>

@@ -27,33 +27,36 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-      {/* Premium Header */}
-      <header className="bg-white/80 backdrop-blur-xl border-b border-gray-200/50 sticky top-0 z-50">
+      {/* Navigation Header */}
+      <nav className="nav-primary sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl flex items-center justify-center">
                 <span className="text-white font-bold text-sm">AI</span>
               </div>
-              <h1 className="text-2xl font-bold text-gray-900">ElevateAI</h1>
+              <h1 className="text-2xl font-bold">ElevateAI</h1>
             </div>
             <nav className="hidden md:flex items-center gap-8">
-              <Link href="/brandchat" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
+              <Link href="/brandchat" className="nav-link">
                 BrandChat
               </Link>
-              <Link href="/legallens" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
+              <Link href="/ad-critic" className="nav-link">
+                AdCritic
+              </Link>
+              <Link href="/legallens" className="nav-link">
                 LegalLens
               </Link>
-              <Link href="/admin" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
+              <Link href="/admin" className="nav-link">
                 Admin
               </Link>
-              <Link href="/ad-critic" className="btn-primary text-white px-6 py-2 rounded-xl font-semibold text-sm">
-                Try Ad Critic
+              <Link href="/superadmin" className="btn btn-primary text-sm">
+                Super Admin
               </Link>
             </nav>
           </div>
         </div>
-      </header>
+      </nav>
 
       {/* Main Content */}
       <main className="relative">

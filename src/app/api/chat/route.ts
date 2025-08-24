@@ -24,51 +24,22 @@ interface ChatRequest {
   }>;
 }
 
-// Helper function to create dynamic system prompt from database
+// Helper function to create dynamic system prompt from prompt manager
 async function createDynamicSystemPrompt(persona: ChatRequest['persona'], brand: ChatRequest['brand']): Promise<string> {
   try {
-    // Fetch system prompts from database
-    const { data: systemPrompts, error } = await supabase
-      .from('system_prompts')
-      .select('*')
-      .eq('is_active', true)
-      .in('type', ['system', 'persona', 'brand'])
-      .in('target_id', ['global', persona.id, brand.id]);
-
-    if (error) {
-      console.error('Error fetching system prompts:', error);
-      // Fall back to default prompt
-      return createFallbackSystemPrompt(persona, brand);
-    }
-
-    // Combine prompts in order: system, persona-specific, brand-specific
-    let combinedPrompt = '';
+    const { getConversationPrompt } = await import('@/lib/promptManager');
     
-    // Add system prompt
-    const systemPrompt = systemPrompts.find(p => p.type === 'system' && (p.target_id === 'global' || !p.target_id));
-    if (systemPrompt) {
-      combinedPrompt += systemPrompt.prompt_template + '\n\n';
-    }
+    // Get the dynamic prompt for this persona and brand
+    const prompt = await getConversationPrompt(
+      persona.id,
+      brand.name,
+      brand.description,
+      brand.tone,
+      persona.name,
+      persona.description
+    );
     
-    // Add persona-specific prompt
-    const personaPrompt = systemPrompts.find(p => p.type === 'persona' && p.target_id === persona.id);
-    if (personaPrompt) {
-      combinedPrompt += personaPrompt.prompt_template + '\n\n';
-    }
-    
-    // Add brand-specific prompt
-    const brandPrompt = systemPrompts.find(p => p.type === 'brand' && p.target_id === brand.id);
-    if (brandPrompt) {
-      combinedPrompt += brandPrompt.prompt_template + '\n\n';
-    }
-
-    // If no prompts found, use fallback
-    if (!combinedPrompt) {
-      return createFallbackSystemPrompt(persona, brand);
-    }
-
-    // Replace variables in the combined prompt
-    return replacePromptVariables(combinedPrompt, persona, brand);
+    return prompt;
 
   } catch (error) {
     console.error('Error creating dynamic system prompt:', error);
@@ -120,22 +91,22 @@ function formatChatHistory(chatHistory: ChatRequest['chatHistory']): Array<{role
 }
 
 
-// Grok API call (using xAI's API)
-async function callGrok(messages: Array<{role: 'system' | 'user' | 'assistant', content: string}>): Promise<string> {
-  const grokKey = process.env.GROK_API_KEY;
+// OpenAI API call
+async function callOpenAI(messages: Array<{role: 'system' | 'user' | 'assistant', content: string}>): Promise<string> {
+  const openaiKey = process.env.OPENAI_API_KEY;
   
-  if (!grokKey) {
-    throw new Error('Grok API key not configured');
+  if (!openaiKey) {
+    throw new Error('OpenAI API key not configured');
   }
 
-  const response = await fetch('https://api.x.ai/v1/chat/completions', {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${grokKey}`,
+      'Authorization': `Bearer ${openaiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'grok-2-1212',
+      model: 'gpt-4',
       messages: messages,
       max_tokens: 500,
       temperature: 0.8,
@@ -144,7 +115,7 @@ async function callGrok(messages: Array<{role: 'system' | 'user' | 'assistant', 
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('Grok API error response:', errorText);
+    console.error('OpenAI API error response:', errorText);
     let errorMessage = `HTTP ${response.status}`;
     
     try {
@@ -154,7 +125,7 @@ async function callGrok(messages: Array<{role: 'system' | 'user' | 'assistant', 
       errorMessage = errorText || 'Unknown error';
     }
     
-    throw new Error(`Grok API error: ${errorMessage}`);
+    throw new Error(`OpenAI API error: ${errorMessage}`);
   }
 
   const data = await response.json();
@@ -188,11 +159,11 @@ export async function POST(request: NextRequest) {
 
     let response: string;
     
-    // Use Grok AI
+    // Use OpenAI
     try {
-      response = await callGrok(messages);
-    } catch (grokError) {
-      console.error('Grok AI failed:', grokError);
+      response = await callOpenAI(messages);
+    } catch (openaiError) {
+      console.error('OpenAI failed:', openaiError);
       
       // Fallback response based on persona
       response = `Hey! I'm having some technical issues right now, but as a ${persona.name}, I'd love to chat about ${brand.name} with you. Can you try asking your question again in a moment?`;

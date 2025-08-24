@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
 
 interface SystemPrompt {
   id: string;
@@ -44,17 +43,18 @@ export default function AdminDashboard() {
     }
   };
 
-  // Load all system prompts from Supabase
+  // Load all system prompts from API
   const loadPrompts = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('system_prompts')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const response = await fetch('/api/admin/prompts');
+      const result = await response.json();
       
-      if (error) throw error;
-      setPrompts(data || []);
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to load prompts');
+      }
+      
+      setPrompts(result.data || []);
     } catch (error) {
       console.error('Error loading prompts:', error);
     } finally {
@@ -68,15 +68,22 @@ export default function AdminDashboard() {
     
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('system_prompts')
-        .update({
+      const response = await fetch('/api/admin/prompts', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...selectedPrompt,
           prompt_template: editedPrompt,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', selectedPrompt.id);
+        }),
+      });
+
+      const result = await response.json();
       
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to save prompt');
+      }
       
       // Refresh prompts
       await loadPrompts();

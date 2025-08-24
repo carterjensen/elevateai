@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
 
 interface Demographic {
   id: string;
@@ -23,6 +22,7 @@ export default function DemographicsAdmin() {
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -37,35 +37,28 @@ export default function DemographicsAdmin() {
     e.preventDefault();
     if (password === 'elevateai2024') {
       setIsAuthenticated(true);
-      await initializeData();
       await loadDemographics();
     } else {
       alert('Incorrect password');
     }
   };
 
-  // Initialize data if needed
-  const initializeData = async () => {
-    try {
-      await fetch('/api/admin/init', { method: 'POST' });
-    } catch (error) {
-      console.error('Error initializing data:', error);
-    }
-  };
-
-  // Load all demographics from Supabase
+  // Load demographics from API
   const loadDemographics = async () => {
     setLoading(true);
+    setError(null);
     try {
-      const { data, error } = await supabase
-        .from('demographics')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const response = await fetch('/api/admin/demographics');
+      const result = await response.json();
       
-      if (error) throw error;
-      setDemographics(data || []);
+      if (result.success) {
+        setDemographics(result.data || []);
+      } else {
+        setError('Failed to load demographics');
+      }
     } catch (error) {
       console.error('Error loading demographics:', error);
+      setError('Error loading demographics');
     } finally {
       setLoading(false);
     }
@@ -79,27 +72,34 @@ export default function DemographicsAdmin() {
     }
 
     setLoading(true);
+    setError(null);
     try {
-      const { error } = await supabase
-        .from('demographics')
-        .insert({
+      const response = await fetch('/api/admin/demographics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           name: formData.name,
           description: formData.description,
           age_range: formData.age_range,
           characteristics: formData.characteristics.filter(c => c.trim() !== ''),
-          is_active: formData.is_active,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        });
+          is_active: formData.is_active
+        })
+      });
+
+      const result = await response.json();
       
-      if (error) throw error;
-      
-      await loadDemographics();
-      resetForm();
-      setIsCreating(false);
-      alert('Demographic created successfully!');
+      if (result.success) {
+        await loadDemographics();
+        resetForm();
+        setIsCreating(false);
+        alert('Demographic created successfully!');
+      } else {
+        setError(result.error || 'Failed to create demographic');
+        alert('Error creating demographic: ' + (result.error || 'Unknown error'));
+      }
     } catch (error) {
       console.error('Error creating demographic:', error);
+      setError('Error creating demographic');
       alert('Error creating demographic');
     } finally {
       setLoading(false);
@@ -111,28 +111,36 @@ export default function DemographicsAdmin() {
     if (!selectedDemographic || !formData.name.trim()) return;
 
     setLoading(true);
+    setError(null);
     try {
-      const { error } = await supabase
-        .from('demographics')
-        .update({
+      const response = await fetch('/api/admin/demographics', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: selectedDemographic.id,
           name: formData.name,
           description: formData.description,
           age_range: formData.age_range,
           characteristics: formData.characteristics.filter(c => c.trim() !== ''),
-          is_active: formData.is_active,
-          updated_at: new Date().toISOString()
+          is_active: formData.is_active
         })
-        .eq('id', selectedDemographic.id);
+      });
+
+      const result = await response.json();
       
-      if (error) throw error;
-      
-      await loadDemographics();
-      setIsEditing(false);
-      setSelectedDemographic(null);
-      resetForm();
-      alert('Demographic updated successfully!');
+      if (result.success) {
+        await loadDemographics();
+        setIsEditing(false);
+        setSelectedDemographic(null);
+        resetForm();
+        alert('Demographic updated successfully!');
+      } else {
+        setError(result.error || 'Failed to update demographic');
+        alert('Error updating demographic: ' + (result.error || 'Unknown error'));
+      }
     } catch (error) {
       console.error('Error updating demographic:', error);
+      setError('Error updating demographic');
       alert('Error updating demographic');
     } finally {
       setLoading(false);
@@ -144,22 +152,28 @@ export default function DemographicsAdmin() {
     if (!confirm('Are you sure you want to delete this demographic?')) return;
 
     setLoading(true);
+    setError(null);
     try {
-      const { error } = await supabase
-        .from('demographics')
-        .delete()
-        .eq('id', id);
+      const response = await fetch(`/api/admin/demographics?id=${id}`, {
+        method: 'DELETE'
+      });
+
+      const result = await response.json();
       
-      if (error) throw error;
-      
-      await loadDemographics();
-      if (selectedDemographic?.id === id) {
-        setSelectedDemographic(null);
-        resetForm();
+      if (result.success) {
+        await loadDemographics();
+        if (selectedDemographic?.id === id) {
+          setSelectedDemographic(null);
+          resetForm();
+        }
+        alert('Demographic deleted successfully!');
+      } else {
+        setError(result.error || 'Failed to delete demographic');
+        alert('Error deleting demographic: ' + (result.error || 'Unknown error'));
       }
-      alert('Demographic deleted successfully!');
     } catch (error) {
       console.error('Error deleting demographic:', error);
+      setError('Error deleting demographic');
       alert('Error deleting demographic');
     } finally {
       setLoading(false);
@@ -256,12 +270,17 @@ export default function DemographicsAdmin() {
             </Link>
             <h1 className="text-2xl font-bold text-gray-900">Demographics Management</h1>
           </div>
-          <button
-            onClick={() => setIsAuthenticated(false)}
-            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            Logout
-          </button>
+          <div className="flex items-center gap-4">
+            {error && (
+              <div className="text-red-600 text-sm">Error: {error}</div>
+            )}
+            <button
+              onClick={() => setIsAuthenticated(false)}
+              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </div>
 
@@ -270,7 +289,10 @@ export default function DemographicsAdmin() {
           {/* Demographics List */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200">
             <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">Demographics</h2>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Demographics</h2>
+                <p className="text-sm text-gray-600 mt-1">Manage target demographic profiles</p>
+              </div>
               <button
                 onClick={startCreating}
                 className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
@@ -280,17 +302,21 @@ export default function DemographicsAdmin() {
             </div>
             <div className="p-6">
               {loading ? (
-                <div className="text-center py-4">Loading...</div>
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <div className="text-gray-600">Loading demographics...</div>
+                </div>
               ) : (
                 <div className="space-y-3">
                   {demographics.map((demographic) => (
                     <div
                       key={demographic.id}
-                      className={`p-4 rounded-lg border transition-colors ${
+                      className={`p-4 rounded-lg border transition-colors cursor-pointer ${
                         selectedDemographic?.id === demographic.id
                           ? 'border-blue-500 bg-blue-50'
                           : 'border-gray-200 hover:bg-gray-50'
                       }`}
+                      onClick={() => selectDemographic(demographic)}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
@@ -309,30 +335,32 @@ export default function DemographicsAdmin() {
                               </span>
                             )}
                           </div>
-                          <div className="text-xs text-gray-500 mt-2">
-                            {demographic.is_active ? '✅ Active' : '⏸️ Inactive'}
+                          <div className="flex items-center justify-between mt-2">
+                            <div className="text-xs text-gray-500">
+                              {demographic.is_active ? '✅ Active' : '⏸️ Inactive'}
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteDemographic(demographic.id);
+                              }}
+                              className="text-red-600 hover:text-red-800 text-sm px-2 py-1 rounded hover:bg-red-50"
+                            >
+                              Delete
+                            </button>
                           </div>
-                        </div>
-                        <div className="flex gap-2 ml-4">
-                          <button
-                            onClick={() => selectDemographic(demographic)}
-                            className="text-blue-600 hover:text-blue-800 text-sm"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => deleteDemographic(demographic.id)}
-                            className="text-red-600 hover:text-red-800 text-sm"
-                          >
-                            Delete
-                          </button>
                         </div>
                       </div>
                     </div>
                   ))}
                   {demographics.length === 0 && (
                     <div className="text-center py-8 text-gray-500">
-                      No demographics found. Create your first demographic to get started.
+                      <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                      </div>
+                      No demographics found. Click "Add New" to create your first demographic profile.
                     </div>
                   )}
                 </div>
@@ -454,6 +482,11 @@ export default function DemographicsAdmin() {
                 </div>
               ) : (
                 <div className="text-center py-8 text-gray-500">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </div>
                   Select a demographic from the list to edit or create a new one
                 </div>
               )}
