@@ -52,7 +52,6 @@ export default function BrandChat() {
   const [showPersonaDropdown, setShowPersonaDropdown] = useState(false);
   const [showBrandDropdown, setShowBrandDropdown] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'disconnected' | 'error'>('checking');
-  const [connectionMessage, setConnectionMessage] = useState('Checking connection...');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -71,10 +70,8 @@ export default function BrandChat() {
         const response = await fetch('/api/status');
         const data = await response.json();
         setConnectionStatus(data.status);
-        setConnectionMessage(data.message);
       } catch (error) {
         setConnectionStatus('error');
-        setConnectionMessage('Failed to check connection');
       }
     };
 
@@ -141,7 +138,7 @@ export default function BrandChat() {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e as any);
+      handleSubmit(e as React.FormEvent);
     }
   };
 

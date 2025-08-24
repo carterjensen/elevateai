@@ -7,11 +7,20 @@ interface PreviewRequest {
 }
 
 // Helper function to create dynamic system prompt (copied from chat route)
+interface SystemPromptRecord {
+  id: string;
+  name: string;
+  type: 'persona' | 'brand' | 'system';
+  target_id: string;
+  prompt_template: string;
+  is_active: boolean;
+}
+
 async function createDynamicSystemPrompt(personaId: string, brandId: string): Promise<{
   combinedPrompt: string;
-  systemPrompt: any;
-  personaPrompt: any;
-  brandPrompt: any;
+  systemPrompt: SystemPromptRecord | null;
+  personaPrompt: SystemPromptRecord | null;
+  brandPrompt: SystemPromptRecord | null;
   finalPrompt: string;
 }> {
   try {

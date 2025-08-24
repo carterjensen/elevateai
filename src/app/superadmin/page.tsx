@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 
 interface SystemPrompt {
@@ -52,8 +52,13 @@ export default function SuperAdminDashboard() {
   const [loading, setLoading] = useState(false);
   const [selectedPersona, setSelectedPersona] = useState(personas[0]);
   const [selectedBrand, setSelectedBrand] = useState(brands[0]);
-  const [promptPreview, setPromptPreview] = useState<any>(null);
-  const [showPreview, setShowPreview] = useState(false);
+  const [promptPreview, setPromptPreview] = useState<{
+    systemPrompt: string | null;
+    personaPrompt: string | null;
+    brandPrompt: string | null;
+    finalPrompt: string;
+    timestamp: string;
+  } | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
 
   // Super admin authentication
@@ -207,7 +212,6 @@ export default function SuperAdminDashboard() {
       
       const data = await response.json();
       setPromptPreview(data.data);
-      setShowPreview(true);
     } catch (error) {
       console.error('Error generating preview:', error);
       alert('Error generating preview');
@@ -295,7 +299,7 @@ export default function SuperAdminDashboard() {
           ].map(tab => (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key as any)}
+              onClick={() => setActiveTab(tab.key as 'system' | 'persona' | 'brand' | 'preview')}
               className={`px-4 py-4 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === tab.key
                   ? 'border-red-500 text-red-400'
@@ -318,7 +322,7 @@ export default function SuperAdminDashboard() {
               <div className="p-6 border-b border-gray-700">
                 <h2 className="text-lg font-semibold">🔍 Live Prompt Preview</h2>
                 <p className="text-sm text-gray-400 mt-1">
-                  See exactly what's being sent to Grok AI
+                  See exactly what&apos;s being sent to Grok AI
                 </p>
               </div>
               <div className="p-6 space-y-4">
@@ -512,11 +516,11 @@ export default function SuperAdminDashboard() {
                   <div className="bg-gray-900 border border-gray-600 rounded-lg p-4">
                     <h4 className="text-sm font-medium text-gray-300 mb-2">Available Variables</h4>
                     <div className="grid grid-cols-2 gap-2 text-xs">
-                      <code className="px-2 py-1 bg-gray-700 text-gray-300 rounded">{'{persona_name}'}</code>
-                      <code className="px-2 py-1 bg-gray-700 text-gray-300 rounded">{'{persona_description}'}</code>
-                      <code className="px-2 py-1 bg-gray-700 text-gray-300 rounded">{'{brand_name}'}</code>
-                      <code className="px-2 py-1 bg-gray-700 text-gray-300 rounded">{'{brand_description}'}</code>
-                      <code className="px-2 py-1 bg-gray-700 text-gray-300 rounded">{'{brand_tone}'}</code>
+                      <code className="px-2 py-1 bg-gray-700 text-gray-300 rounded">{'\{persona_name\}'}</code>
+                      <code className="px-2 py-1 bg-gray-700 text-gray-300 rounded">{'\{persona_description\}'}</code>
+                      <code className="px-2 py-1 bg-gray-700 text-gray-300 rounded">{'\{brand_name\}'}</code>
+                      <code className="px-2 py-1 bg-gray-700 text-gray-300 rounded">{'\{brand_description\}'}</code>
+                      <code className="px-2 py-1 bg-gray-700 text-gray-300 rounded">{'\{brand_tone\}'}</code>
                     </div>
                   </div>
                   
