@@ -215,7 +215,7 @@ export async function saveActivePrompts(prompts: SystemPrompt[]): Promise<void> 
 }
 
 // Get prompt by target ID and type
-export async function getPromptForTarget(targetId: string, type: 'persona' | 'system' = 'persona'): Promise<SystemPrompt | null> {
+export async function getPromptForTarget(targetId: string | null, type: 'persona' | 'system' = 'persona'): Promise<SystemPrompt | null> {
   const prompts = await loadActivePrompts();
   return prompts.find(p => p.target_id === targetId && p.type === type && p.is_active) || null;
 }

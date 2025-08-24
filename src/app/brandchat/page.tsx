@@ -202,8 +202,8 @@ export default function BrandChat() {
       ...messages.map(msg => [
         msg.timestamp.toISOString(),
         msg.role,
-        msg.role === 'assistant' ? selectedPersona.name : 'User',
-        selectedBrand.name,
+        msg.role === 'assistant' ? (selectedPersona?.name || 'Assistant') : 'User',
+        selectedBrand?.name || 'Brand',
         `"${msg.content.replace(/"/g, '""')}"`
       ])
     ].map(row => row.join(',')).join('\n');
@@ -212,7 +212,7 @@ export default function BrandChat() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `brandchat-${selectedPersona.name}-${selectedBrand.name}-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `brandchat-${selectedPersona?.name || 'persona'}-${selectedBrand?.name || 'brand'}-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     setShowExportDropdown(false);
@@ -221,16 +221,16 @@ export default function BrandChat() {
   // Export to Markdown
   const exportToMarkdown = () => {
     const mdContent = [
-      `# BrandChat: ${selectedPersona.name} × ${selectedBrand.name}`,
+      `# BrandChat: ${selectedPersona?.name || 'Persona'} × ${selectedBrand?.name || 'Brand'}`,
       ``,
       `**Date:** ${new Date().toLocaleDateString()}`,
-      `**Persona:** ${selectedPersona.name} (${selectedPersona.description})`,
-      `**Brand:** ${selectedBrand.name} (${selectedBrand.description})`,
+      `**Persona:** ${selectedPersona?.name || 'Persona'} (${selectedPersona?.description || 'Description'})`,
+      `**Brand:** ${selectedBrand?.name || 'Brand'} (${selectedBrand?.description || 'Description'})`,
       ``,
       `---`,
       ``,
       ...messages.map(msg => [
-        `## ${msg.role === 'user' ? '👤 User' : `${selectedPersona.emoji} ${selectedPersona.name}`}`,
+        `## ${msg.role === 'user' ? '👤 User' : `${selectedPersona?.emoji || '🤖'} ${selectedPersona?.name || 'Assistant'}`}`,
         `*${msg.timestamp.toLocaleString()}*`,
         ``,
         msg.content,
@@ -242,7 +242,7 @@ export default function BrandChat() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `brandchat-${selectedPersona.name}-${selectedBrand.name}-${new Date().toISOString().split('T')[0]}.md`;
+    a.download = `brandchat-${selectedPersona?.name || 'persona'}-${selectedBrand?.name || 'brand'}-${new Date().toISOString().split('T')[0]}.md`;
     a.click();
     URL.revokeObjectURL(url);
     setShowExportDropdown(false);

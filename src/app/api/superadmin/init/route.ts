@@ -262,7 +262,7 @@ export async function POST() {
     console.log('Initializing Super Admin system...');
 
     // Try to query the table first to see if it exists
-    const { data: _tableCheck, error: tableError } = await supabase
+    const { error: tableError } = await supabase
       .from('system_prompts')
       .select('id')
       .limit(1);
