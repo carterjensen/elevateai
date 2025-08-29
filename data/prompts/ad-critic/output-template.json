@@ -1,0 +1,36 @@
+{
+  "format_instructions": "DO NOT MODIFY - This template defines the expected JSON output structure for the ad critic system",
+  "required_structure": {
+    "overall_score": "NUMBER 1-10",
+    "demographic_scores": {
+      "demographic_id": "NUMBER 1-10 - Score for each target demographic"
+    },
+    "strengths": [
+      "STRING - Specific strength of the advertisement",
+      "STRING - Another strength",
+      "STRING - Third strength"
+    ],
+    "weaknesses": [
+      "STRING - Specific weakness or area for improvement",
+      "STRING - Another weakness",
+      "STRING - Third weakness"
+    ],
+    "suggestions": [
+      "STRING - Actionable recommendation for improvement",
+      "STRING - Another suggestion",
+      "STRING - Third suggestion"
+    ],
+    "brand_alignment": "NUMBER 1-10 - How well the ad aligns with brand values",
+    "emotional_impact": "NUMBER 1-10 - Emotional resonance and persuasiveness",
+    "clarity": "NUMBER 1-10 - Message clarity and call-to-action effectiveness",
+    "visual_appeal": "NUMBER 1-10 - Design quality and visual composition",
+    "detailed_analysis": "STRING - Comprehensive paragraph explaining scores and observations"
+  },
+  "validation_rules": {
+    "all_scores_required": "All numeric fields must be present and between 1-10",
+    "arrays_minimum_3": "Strengths, weaknesses, and suggestions must each have exactly 3 items",
+    "detailed_analysis_minimum": "Detailed analysis must be at least 200 characters",
+    "demographic_scores_match": "Demographic scores object must include all target demographic IDs"
+  },
+  "usage_note": "This template ensures consistent output formatting for the UI components. The actual prompt responses should match this JSON structure exactly for proper parsing and display."
+}

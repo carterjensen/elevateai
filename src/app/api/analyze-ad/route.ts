@@ -63,8 +63,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create detailed analysis prompt
-    const analysisPrompt = `You are an expert advertising critic and brand strategist. Analyze this advertisement image and provide a comprehensive critique.
+    // Load system prompt from file
+    let analysisPrompt: string;
+    try {
+      const fs = await import('fs/promises');
+      const path = await import('path');
+      
+      const promptPath = path.join(process.cwd(), 'data', 'prompts', 'ad-critic', 'system-prompt.md');
+      const outputPath = path.join(process.cwd(), 'data', 'prompts', 'ad-critic', 'output-template.json');
+      
+      const systemPrompt = await fs.readFile(promptPath, 'utf-8');
+      const outputTemplate = await fs.readFile(outputPath, 'utf-8');
+      
+      // Create demographic context
+      const targetDemographics = demographics.map(d => 
+        `- ${d.name} (${d.age_range}): ${d.description}\n  Key characteristics: ${d.characteristics.join(', ')}`
+      ).join('\n');
+      
+      const demographicScores = demographics.map(d => `"${d.id}": [score 1-10]`).join(',\n    ');
+      
+      // Replace template variables
+      analysisPrompt = systemPrompt
+        .replace(/{{brand_name}}/g, brand.name)
+        .replace(/{{brand_industry}}/g, brand.industry || 'Not specified')
+        .replace(/{{brand_description}}/g, brand.description)
+        .replace(/{{brand_tone}}/g, brand.tone)
+        .replace(/{{brand_values}}/g, brand.brand_values?.join(', ') || 'Not specified')
+        .replace(/{{target_demographics}}/g, targetDemographics)
+        .replace(/{{demographic_ids_scores}}/g, demographicScores);
+      
+      // Add output format instructions
+      analysisPrompt += `\n\nIMPORTANT: Return your response as valid JSON matching this structure:\n${outputTemplate}`;
+      
+    } catch (error) {
+      console.error('Error loading ad critic prompts:', error);
+      // Fallback to original hardcoded prompt
+      analysisPrompt = `You are an expert advertising critic and brand strategist. Analyze this advertisement image and provide a comprehensive critique.
 
 BRAND CONTEXT:
 - Name: ${brand.name}
@@ -104,6 +138,7 @@ Consider:
 8. Potential for virality/shareability
 
 Provide honest, constructive feedback with specific actionable recommendations.`;
+    }
 
     // Call OpenAI Vision API
     const response = await openai.chat.completions.create({

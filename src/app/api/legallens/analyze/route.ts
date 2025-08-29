@@ -106,13 +106,38 @@ async function fetchActiveLegalRules(): Promise<Array<{
   return data || [];
 }
 
-// Helper function to analyze text content
-async function analyzeTextContent(content: string, legalRules: Array<{name: string; category: string; severity: string; rules_content: string}>): Promise<AnalysisResult> {
-  const rulesContext = legalRules.map(rule => 
-    `${rule.name} (${rule.category}, ${rule.severity}): ${rule.rules_content}`
-  ).join('\n\n');
-
-  const systemPrompt = `You are a legal compliance expert analyzing advertising content against specific legal regulations. 
+// Helper function to load system prompt from file
+async function loadLegalSystemPrompt(legalRules: Array<{name: string; category: string; severity: string; rules_content: string}>): Promise<string> {
+  try {
+    const fs = await import('fs/promises');
+    const path = await import('path');
+    
+    const promptPath = path.join(process.cwd(), 'data', 'prompts', 'legal-lens', 'system-prompt.md');
+    const outputPath = path.join(process.cwd(), 'data', 'prompts', 'legal-lens', 'output-template.json');
+    
+    const systemPrompt = await fs.readFile(promptPath, 'utf-8');
+    const outputTemplate = await fs.readFile(outputPath, 'utf-8');
+    
+    // Create legal rules context
+    const rulesContext = legalRules.map(rule => 
+      `${rule.name} (${rule.category}, ${rule.severity}): ${rule.rules_content}`
+    ).join('\n\n');
+    
+    // Replace template variables
+    const dynamicPrompt = systemPrompt
+      .replace(/{{legal_rules_context}}/g, rulesContext);
+    
+    // Add output format instructions
+    return `${dynamicPrompt}\n\nIMPORTANT: Return your response as valid JSON matching this structure:\n${outputTemplate}`;
+    
+  } catch (error) {
+    console.error('Error loading legal lens prompts:', error);
+    // Fallback to original hardcoded prompt
+    const rulesContext = legalRules.map(rule => 
+      `${rule.name} (${rule.category}, ${rule.severity}): ${rule.rules_content}`
+    ).join('\n\n');
+    
+    return `You are a legal compliance expert analyzing advertising content against specific legal regulations. 
 
 LEGAL RULES TO CHECK AGAINST:
 ${rulesContext}
@@ -151,6 +176,12 @@ SCORING GUIDELINES:
 - 0-29: Major violations, high legal risk
 
 Be thorough but practical. Focus on clear, actionable violations and warnings.`;
+  }
+}
+
+// Helper function to analyze text content
+async function analyzeTextContent(content: string, legalRules: Array<{name: string; category: string; severity: string; rules_content: string}>): Promise<AnalysisResult> {
+  const systemPrompt = await loadLegalSystemPrompt(legalRules);
 
   try {
     const response = await openai.chat.completions.create({
@@ -173,15 +204,8 @@ Be thorough but practical. Focus on clear, actionable violations and warnings.`;
 
 // Helper function to analyze image content
 async function analyzeImageContent(imageData: string, legalRules: Array<{name: string; category: string; severity: string; rules_content: string}>): Promise<AnalysisResult> {
-  const rulesContext = legalRules.map(rule => 
-    `${rule.name} (${rule.category}, ${rule.severity}): ${rule.rules_content}`
-  ).join('\n\n');
-
-  const systemPrompt = `You are analyzing advertising images for legal compliance. Check against these legal rules:
-
-${rulesContext}
-
-Analyze both the visual content and any text visible in the image. Return JSON with the same structure as text analysis.`;
+  const baseSystemPrompt = await loadLegalSystemPrompt(legalRules);
+  const systemPrompt = `${baseSystemPrompt}\n\nSPECIAL INSTRUCTIONS FOR IMAGE ANALYSIS:\nAnalyze both the visual content and any text visible in the image. Consider visual implications, implied claims, and overall messaging conveyed through imagery.`;
 
   try {
     const response = await openai.chat.completions.create({

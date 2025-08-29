@@ -1,0 +1,33 @@
+{
+  "format_instructions": "DO NOT MODIFY - This template defines the expected JSON output structure for the prompt discovery system",
+  "required_structure": {
+    "total_queries": 50,
+    "generation_timestamp": "ISO_DATE_STRING",
+    "product_category": "STRING",
+    "queries": [
+      {
+        "id": "NUMBER",
+        "query": "STRING - The actual search query",
+        "intent": "research|comparison|problem-solution|purchase",
+        "confidence_score": "NUMBER 1-100",
+        "ai_recommendation_potential": "low|medium|high",
+        "target_audience": "STRING - Primary audience for this query",
+        "seasonal_relevance": "STRING - When this query peaks",
+        "competitive_advantage": "STRING - Why this query favors the brand"
+      }
+    ],
+    "summary": {
+      "intent_distribution": {
+        "research": "NUMBER - count of research queries",
+        "comparison": "NUMBER - count of comparison queries", 
+        "problem_solution": "NUMBER - count of problem-solution queries",
+        "purchase": "NUMBER - count of purchase queries"
+      },
+      "top_opportunities": [
+        "STRING - Top 5 highest potential queries"
+      ],
+      "market_insights": "STRING - Key insights about the query landscape"
+    }
+  },
+  "usage_note": "This template ensures consistent output formatting for the UI components. The actual prompt responses should match this JSON structure exactly."
+}

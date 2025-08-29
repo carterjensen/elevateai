@@ -96,6 +96,15 @@ export default function SuperAdminDashboard() {
       
       const data = await response.json();
       setPrompts(data);
+      
+      // If there's a currently selected prompt, update it with fresh data
+      if (selectedPrompt) {
+        const refreshedPrompt = data.find((p: SystemPrompt) => p.id === selectedPrompt.id);
+        if (refreshedPrompt) {
+          setSelectedPrompt(refreshedPrompt);
+          setEditedPrompt(refreshedPrompt.prompt_template);
+        }
+      }
     } catch (error) {
       console.error('Error loading prompts:', error);
     }
@@ -123,8 +132,8 @@ export default function SuperAdminDashboard() {
         throw new Error(result.error || `HTTP ${response.status}: Failed to save prompt`);
       }
       
+      // Reload prompts - this will automatically refresh the selected prompt too
       await loadPrompts();
-      setSelectedPrompt(prev => prev ? {...prev, prompt_template: editedPrompt} : null);
       alert('Prompt saved successfully!');
     } catch (error) {
       console.error('Error saving prompt:', error);
@@ -272,7 +281,10 @@ export default function SuperAdminDashboard() {
                 <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-sm">AI</span>
                 </div>
-                <h1 className="text-xl font-bold text-white">ElevateAI</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-xl font-bold text-white">ElevateAI</h1>
+                  <span className="px-2 py-1 bg-blue-600 text-white text-xs font-mono rounded-full">v2.000</span>
+                </div>
               </Link>
               <span className="text-gray-500 mx-2">/</span>
               <div className="flex items-center gap-2">
@@ -509,6 +521,9 @@ export default function SuperAdminDashboard() {
             <div className="p-6 border-b border-gray-700">
               <h2 className="text-lg font-semibold">
                 {selectedPrompt ? `Edit: ${selectedPrompt.name}` : 'Select a prompt to edit'}
+                {selectedPrompt && editedPrompt !== selectedPrompt.prompt_template && (
+                  <span className="ml-2 text-yellow-400 text-sm">● Unsaved changes</span>
+                )}
               </h2>
               <p className="text-sm text-gray-400 mt-1">
                 System-level prompt engineering

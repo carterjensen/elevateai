@@ -1,0 +1,46 @@
+{
+  "format_instructions": "DO NOT MODIFY - This template defines the expected JSON output structure for the legal lens system",
+  "required_structure": {
+    "compliance_score": "NUMBER 0-100",
+    "overall_assessment": "STRING - Brief summary of compliance status",
+    "violations": [
+      {
+        "rule_name": "STRING - Name of the violated legal rule",
+        "category": "STRING - Legal category (e.g., healthcare, financial, general)",
+        "severity": "STRING - low|medium|high|critical",
+        "description": "STRING - What rule was violated",
+        "specific_issue": "STRING - Specific part of content that violates the rule",
+        "recommendation": "STRING - How to fix the violation"
+      }
+    ],
+    "warnings": [
+      {
+        "rule_name": "STRING - Name of rule with potential issues",
+        "category": "STRING - Legal category",
+        "description": "STRING - Potential concern or risk area",
+        "recommendation": "STRING - Suggestion for improvement or risk mitigation"
+      }
+    ],
+    "analysis_summary": "STRING - Detailed explanation of the legal analysis performed"
+  },
+  "severity_levels": {
+    "critical": "Immediate legal risk, must be addressed before publication",
+    "high": "Significant legal risk, strong recommendation to address",
+    "medium": "Moderate risk, should be addressed when possible",
+    "low": "Minor concern, consider addressing for best practices"
+  },
+  "scoring_guide": {
+    "90_to_100": "Fully compliant, no issues",
+    "70_to_89": "Minor warnings, mostly compliant",
+    "50_to_69": "Some violations, needs attention",
+    "30_to_49": "Multiple violations, significant issues",
+    "0_to_29": "Major violations, high legal risk"
+  },
+  "validation_rules": {
+    "compliance_score_range": "Must be between 0-100",
+    "severity_values": "Must be one of: low, medium, high, critical",
+    "required_fields": "All main structure fields must be present",
+    "arrays_can_be_empty": "Violations and warnings arrays can be empty if no issues found"
+  },
+  "usage_note": "This template ensures consistent legal analysis output for UI parsing and risk assessment display."
+}

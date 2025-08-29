@@ -2,12 +2,31 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import MarkdownRenderer from '@/components/MarkdownRenderer';
+import SourcesDisplay from '@/components/SourcesDisplay';
+
+interface Source {
+  type: 'web' | 'twitter' | 'ex';
+  title: string;
+  url: string;
+  snippet: string;
+  author?: string;
+  date?: string;
+  profile_image?: string;
+  verified?: boolean;
+  engagement?: {
+    likes?: number;
+    retweets?: number;
+    replies?: number;
+  };
+}
 
 interface Message {
   id: string;
   content: string;
   role: 'user' | 'assistant';
   timestamp: Date;
+  sources?: Source[];
 }
 
 interface Persona {
@@ -102,12 +121,21 @@ export default function BrandChat() {
         const response = await fetch('/api/status');
         const data = await response.json();
         setConnectionStatus(data.status);
+        
+        // Store additional info for enhanced status display
+        if (data.service && data.features) {
+          setConnectionStatus(data.status);
+        }
       } catch {
         setConnectionStatus('error');
       }
     };
 
     checkConnection();
+    
+    // Check connection status every 30 seconds
+    const interval = setInterval(checkConnection, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -151,7 +179,8 @@ export default function BrandChat() {
           id: (Date.now() + 1).toString(),
           content: fullText,
           role: 'assistant',
-          timestamp: new Date()
+          timestamp: new Date(),
+          sources: data.sources
         };
         setMessages(prev => [...prev, assistantMessage]);
       });
@@ -198,13 +227,15 @@ export default function BrandChat() {
   // Export to CSV
   const exportToCSV = () => {
     const csvContent = [
-      ['Timestamp', 'Role', 'Persona', 'Brand', 'Content'],
+      ['Timestamp', 'Role', 'Persona', 'Brand', 'Content', 'Sources Count', 'Source URLs'],
       ...messages.map(msg => [
         msg.timestamp.toISOString(),
         msg.role,
         msg.role === 'assistant' ? (selectedPersona?.name || 'Assistant') : 'User',
         selectedBrand?.name || 'Brand',
-        `"${msg.content.replace(/"/g, '""')}"`
+        `"${msg.content.replace(/"/g, '""')}"`,
+        msg.sources?.length || 0,
+        msg.sources?.map(s => s.url).join('; ') || ''
       ])
     ].map(row => row.join(',')).join('\n');
 
@@ -226,16 +257,38 @@ export default function BrandChat() {
       `**Date:** ${new Date().toLocaleDateString()}`,
       `**Persona:** ${selectedPersona?.name || 'Persona'} (${selectedPersona?.description || 'Description'})`,
       `**Brand:** ${selectedBrand?.name || 'Brand'} (${selectedBrand?.description || 'Description'})`,
+      `**Enhanced with:** Grok AI + Web Search + X (Twitter) Search`,
       ``,
       `---`,
       ``,
-      ...messages.map(msg => [
-        `## ${msg.role === 'user' ? '👤 User' : `${selectedPersona?.emoji || '🤖'} ${selectedPersona?.name || 'Assistant'}`}`,
-        `*${msg.timestamp.toLocaleString()}*`,
-        ``,
-        msg.content,
-        ``
-      ].join('\n'))
+      ...messages.map(msg => {
+        const messageParts = [
+          `## ${msg.role === 'user' ? '👤 User' : `${selectedPersona?.emoji || '🤖'} ${selectedPersona?.name || 'Assistant'}`}`,
+          `*${msg.timestamp.toLocaleString()}*`,
+          ``,
+          msg.content,
+          ``
+        ];
+        
+        // Add sources if available
+        if (msg.sources && msg.sources.length > 0) {
+          messageParts.push(`### Sources (${msg.sources.length})`);
+          messageParts.push(``);
+          msg.sources.forEach((source, index) => {
+            messageParts.push(`${index + 1}. **[${source.title}](${source.url})** (${source.type})`);
+            if (source.author) {
+              messageParts.push(`   - Author: ${source.author}${source.verified ? ' ✓' : ''}`);
+            }
+            if (source.date) {
+              messageParts.push(`   - Date: ${source.date}`);
+            }
+            messageParts.push(`   - ${source.snippet}`);
+            messageParts.push(``);
+          });
+        }
+        
+        return messageParts.join('\n');
+      })
     ].join('\n');
 
     const blob = new Blob([mdContent], { type: 'text/markdown' });
@@ -462,22 +515,33 @@ export default function BrandChat() {
                 </div>
               )}
 
-              {/* Connection Status */}
-              <div className="flex items-center gap-2 text-sm">
-                <div className={`w-2 h-2 rounded-full ${
-                  connectionStatus === 'connected' ? 'bg-green-500' :
-                  connectionStatus === 'checking' ? 'bg-yellow-500 animate-pulse' :
-                  'bg-red-500'
-                }`}></div>
-                <span className={`${
-                  connectionStatus === 'connected' ? 'text-green-600' :
-                  connectionStatus === 'checking' ? 'text-yellow-600' :
-                  'text-red-600'
-                }`}>
-                  {connectionStatus === 'connected' ? 'OpenAI Connected' :
-                   connectionStatus === 'checking' ? 'Connecting to OpenAI...' :
-                   'OpenAI Disconnected'}
-                </span>
+              {/* Enhanced Connection Status */}
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <div className={`w-2 h-2 rounded-full ${
+                    connectionStatus === 'connected' ? 'bg-green-500' :
+                    connectionStatus === 'checking' ? 'bg-yellow-500 animate-pulse' :
+                    'bg-red-500'
+                  }`}></div>
+                  <span className={`font-medium ${
+                    connectionStatus === 'connected' ? 'text-green-600' :
+                    connectionStatus === 'checking' ? 'text-yellow-600' :
+                    'text-red-600'
+                  }`}>
+                    {connectionStatus === 'connected' ? 'Grok AI' :
+                     connectionStatus === 'checking' ? 'Connecting...' :
+                     'Disconnected'}
+                  </span>
+                </div>
+                
+                {connectionStatus === 'connected' && (
+                  <div className="flex items-center gap-1 text-xs text-green-600">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                    </svg>
+                    <span>Enhanced</span>
+                  </div>
+                )}
               </div>
 
               <Link href="/admin" className="nav-link text-sm">Admin</Link>
@@ -497,11 +561,25 @@ export default function BrandChat() {
                 </svg>
               </div>
               <h3 className="text-2xl font-semibold text-gray-900 mb-3">Ready to explore brand insights</h3>
-              <p className="text-gray-600 mb-6 max-w-md">
+              <p className="text-gray-600 mb-4 max-w-md">
                 Chat with <span className="font-semibold text-blue-600">{selectedPersona.name}</span> about <span className="font-semibold text-purple-600">{selectedBrand.name}</span> to understand consumer perspectives.
               </p>
+              <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4 mb-6 max-w-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                  </svg>
+                  <span className="font-semibold text-green-800">Enhanced with Grok AI</span>
+                </div>
+                <div className="text-sm text-green-700 space-y-1">
+                  <div>• Real-time web search integration</div>
+                  <div>• Live X (Twitter) social insights</div>
+                  <div>• Up to 20 sources per response</div>
+                  <div>• Beautiful markdown formatting</div>
+                </div>
+              </div>
               <div className="text-sm text-gray-500 max-w-lg">
-                Ask questions about marketing messages, product features, brand positioning, or consumer reactions to get authentic persona-based insights.
+                Ask about current trends, recent campaigns, social media buzz, or get authentic persona-based insights with real-time data.
               </div>
             </div>
           ) : (
@@ -521,9 +599,29 @@ export default function BrandChat() {
                         <span className="font-medium">{selectedPersona.name}</span>
                         <span>•</span>
                         <span>{selectedBrand.name}</span>
+                        {message.sources && message.sources.length > 0 && (
+                          <>
+                            <span>•</span>
+                            <div className="flex items-center gap-1">
+                              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
+                              </svg>
+                              <span className="text-green-600 font-medium">Enhanced with sources</span>
+                            </div>
+                          </>
+                        )}
                       </div>
                     )}
-                    {message.content}
+                    {message.role === 'assistant' ? (
+                      <div>
+                        <MarkdownRenderer content={message.content} />
+                        {message.sources && message.sources.length > 0 && (
+                          <SourcesDisplay sources={message.sources} className="mt-4" />
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-gray-900">{message.content}</div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -541,7 +639,8 @@ export default function BrandChat() {
                     </div>
                     {isStreaming ? (
                       <div className="streaming-text">
-                        {streamingText}<span className="animate-pulse">|</span>
+                        <MarkdownRenderer content={streamingText} />
+                        <span className="animate-pulse text-blue-500 ml-1">|</span>
                       </div>
                     ) : (
                       <div className="typing-indicator">
