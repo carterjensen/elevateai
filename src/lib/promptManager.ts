@@ -1,6 +1,10 @@
-import { writeFile, readFile, mkdir } from 'fs/promises';
-import { existsSync } from 'fs';
+import { writeFile, readFile, mkdir, existsSync } from 'fs';
+import { promisify } from 'util';
 import path from 'path';
+
+const writeFileAsync = promisify(writeFile);
+const readFileAsync = promisify(readFile);
+const mkdirAsync = promisify(mkdir);
 
 // Types for prompt management
 export interface SystemPrompt {
@@ -179,7 +183,7 @@ Current conversation context: The user is asking about {brand_name} from the per
 // Ensure storage directory exists
 async function ensureStorageDir() {
   if (!existsSync(PROMPTS_DIR)) {
-    await mkdir(PROMPTS_DIR, { recursive: true });
+    await mkdirAsync(PROMPTS_DIR, { recursive: true });
   }
 }
 
@@ -189,7 +193,7 @@ export async function loadActivePrompts(): Promise<SystemPrompt[]> {
     await ensureStorageDir();
     
     if (existsSync(PROMPTS_FILE)) {
-      const data = await readFile(PROMPTS_FILE, 'utf8');
+      const data = await readFileAsync(PROMPTS_FILE, 'utf8');
       const prompts = JSON.parse(data);
       return prompts;
     } else {
@@ -209,12 +213,12 @@ export async function saveActivePrompts(prompts: SystemPrompt[]): Promise<void> 
     await ensureStorageDir();
     console.log(`Saving prompts to: ${PROMPTS_FILE}`);
     console.log(`Number of prompts: ${prompts.length}`);
-    await writeFile(PROMPTS_FILE, JSON.stringify(prompts, null, 2));
+    await writeFileAsync(PROMPTS_FILE, JSON.stringify(prompts, null, 2));
     console.log('Prompts saved successfully');
   } catch (error) {
     console.error('Error saving active prompts:', error);
     console.error('Prompts file path:', PROMPTS_FILE);
-    console.error('Storage directory exists:', require('fs').existsSync(require('path').dirname(PROMPTS_FILE)));
+    console.error('Storage directory exists:', existsSync(path.dirname(PROMPTS_FILE)));
     throw error;
   }
 }

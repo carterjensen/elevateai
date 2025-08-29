@@ -624,7 +624,7 @@ export async function POST(request: NextRequest) {
     platformAnalyses.push(...platformResults);
 
     // Generate comparison analysis
-    const comparison = generateComparison(platformAnalyses, brandName);
+    const comparison = generateComparison(platformAnalyses);
 
     const result: SentimentAnalysisResponse = {
       brandName,
@@ -643,7 +643,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function generateComparison(platforms: PlatformAnalysis[], _brandName: string): SentimentAnalysisResponse['comparison'] {
+function generateComparison(platforms: PlatformAnalysis[]): SentimentAnalysisResponse['comparison'] {
   const averageScores: { [platform: string]: { [metric: string]: number } } = {};
   const metricNames = ['quality', 'value', 'trust', 'customerExperience', 'brandReputation', 'innovation', 'sustainability', 'emotionalConnection'];
   

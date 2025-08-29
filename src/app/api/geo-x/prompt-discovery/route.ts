@@ -69,10 +69,11 @@ export async function POST(request: NextRequest) {
       'utf-8'
     );
 
-    const outputTemplate = await fs.readFile(
-      path.join(promptsDir, 'output-template.json'),
-      'utf-8'
-    );
+    // Load output template (currently unused but kept for future enhancements)
+    // const outputTemplate = await fs.readFile(
+    //   path.join(promptsDir, 'output-template.json'),
+    //   'utf-8'
+    // );
 
     // Replace template variables with simplified data
     const userPrompt = userPromptTemplate
@@ -179,7 +180,7 @@ Begin your research and generate the JSON response now.`;
       }
       
       // Clean up all query strings to remove any JSON formatting artifacts
-      const cleanedQueries = discoveryData.queries.map((query: any, index: number) => ({
+      const cleanedQueries = discoveryData.queries.map((query: DiscoveryQuery, index: number) => ({
         ...query,
         id: index + 1,
         query: typeof query.query === 'string' 
@@ -295,7 +296,7 @@ Begin your research and generate the JSON response now.`;
           trimmed.toLowerCase().includes('where')
         )) {
           // Clean up the query - remove all JSON formatting
-          let query = trimmed
+          const query = trimmed
                             // Remove all variations of JSON field prefixes - ultra comprehensive cleaning
                             .replace(/^["']?query["']?,?\s*\)\s*:\s*\(\s*["']?/i, '') // Remove "query",): (" prefix
                             .replace(/^["']?query["']?\s*,\s*\)\s*:\s*\(\s*["']?/i, '') // Remove "query" ,): (" prefix
@@ -357,7 +358,7 @@ Begin your research and generate the JSON response now.`;
           .replace(/\[specific demographic\]/g, demographic);
         
         // Assign intent based on query type and position
-        let intent: string;
+        let intent: 'research' | 'comparison' | 'problem-solution' | 'purchase';
         const queryIndex = fallbackQueries.length;
         if (queryIndex < 20) intent = 'research';
         else if (queryIndex < 35) intent = 'problem-solution'; 
@@ -367,7 +368,7 @@ Begin your research and generate the JSON response now.`;
         fallbackQueries.push({
           id: fallbackQueries.length + 1,
           query: adaptedQuery,
-          intent: intent as any,
+          intent: intent,
           confidence_score: Math.floor(Math.random() * 10) + 90, // Higher scores for research-backed queries
           ai_recommendation_potential: Math.random() > 0.3 ? 'high' : 'medium', // More high-potential queries
           target_audience: 'General consumers',

@@ -290,7 +290,7 @@ const QualitativeInsightsView = ({ platforms }: { platforms: PlatformAnalysis[] 
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
                   <blockquote className="text-white font-medium italic text-lg leading-relaxed">
-                    "{quote.quote}"
+                    &ldquo;{quote.quote}&rdquo;
                   </blockquote>
                 </div>
                 <div className="flex items-center gap-2 ml-4">

@@ -324,7 +324,7 @@ export async function POST(request: NextRequest) {
         .order('created_at', { ascending: false })
         .limit(1);
       existingAnalysis = data;
-    } catch (error) {
+    } catch {
       console.log('Analysis history table not found, performing fresh analysis');
     }
 
@@ -365,7 +365,7 @@ export async function POST(request: NextRequest) {
         if (historyError) {
           console.error('Error storing analysis history:', historyError);
         }
-      } catch (error) {
+      } catch {
         console.log('Analysis history table not found, skipping history storage');
       }
     }

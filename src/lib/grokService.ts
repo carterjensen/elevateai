@@ -17,7 +17,7 @@ interface GrokSearchResult {
 interface GrokResponse {
   response: string;
   sources: GrokSearchResult[];
-  raw_response?: any;
+  raw_response?: unknown;
 }
 
 interface GrokChatMessage {
@@ -94,49 +94,62 @@ export class GrokService {
     }
   }
 
-  private extractSources(data: any): GrokSearchResult[] {
+  private extractSources(data: unknown): GrokSearchResult[] {
     const sources: GrokSearchResult[] = [];
 
     // Extract sources from tool calls - Grok live_search format
-    if (data.choices?.[0]?.message?.tool_calls) {
-      for (const toolCall of data.choices[0].message.tool_calls) {
-        if (toolCall.type === 'live_search' && toolCall.function?.arguments) {
-          try {
-            const searchResults = JSON.parse(toolCall.function.arguments);
-            
-            // Handle web results
-            if (searchResults.web_results) {
-              for (const result of searchResults.web_results) {
-                sources.push({
-                  type: 'web',
-                  title: result.title || 'Web Result',
-                  url: result.url || result.link || '',
-                  snippet: result.snippet || result.description || result.content || '',
-                  date: result.date || result.published_date
-                });
-              }
-            }
-            
-            // Handle social/X results
-            if (searchResults.social_results || searchResults.x_results) {
-              const socialResults = searchResults.social_results || searchResults.x_results;
-              for (const result of socialResults) {
-                sources.push({
-                  type: result.platform === 'twitter' || result.platform === 'x' ? 'twitter' : 'ex',
-                  title: (result.text || result.content || '').substring(0, 100) + '...' || 'Social Post',
-                  url: result.url || result.permalink || '',
-                  snippet: result.text || result.content || '',
-                  author: result.username || result.author,
-                  date: result.created_at || result.date,
-                  profile_image: result.profile_image_url || result.avatar,
-                  verified: result.verified,
-                  engagement: result.engagement || {
-                    likes: result.like_count || result.favorites,
-                    retweets: result.retweet_count || result.shares,
-                    replies: result.reply_count || result.comments
+    if (data && typeof data === 'object' && 'choices' in data) {
+      const choices = (data as { choices?: unknown[] }).choices;
+      if (Array.isArray(choices) && choices[0] && typeof choices[0] === 'object' && 'message' in choices[0]) {
+        const message = (choices[0] as { message?: { tool_calls?: unknown[] } }).message;
+        if (message?.tool_calls && Array.isArray(message.tool_calls)) {
+          for (const toolCall of message.tool_calls) {
+            if (toolCall && typeof toolCall === 'object' && 'type' in toolCall && toolCall.type === 'live_search') {
+              const functionData = (toolCall as { function?: { arguments?: string } }).function;
+              if (functionData?.arguments) {
+                try {
+                  const searchResults = JSON.parse(functionData.arguments);
+                  
+                  // Handle web results
+                  if (searchResults.web_results && Array.isArray(searchResults.web_results)) {
+                    for (const result of searchResults.web_results) {
+                      if (result && typeof result === 'object') {
+                        sources.push({
+                          type: 'web',
+                          title: result.title || 'Web Result',
+                          url: result.url || result.link || '',
+                          snippet: result.snippet || result.description || result.content || '',
+                          date: result.date || result.published_date
+                        });
+                      }
+                    }
                   }
-                });
-              }
+                  
+                  // Handle social/X results
+                  if (searchResults.social_results || searchResults.x_results) {
+                    const socialResults = searchResults.social_results || searchResults.x_results;
+                    if (Array.isArray(socialResults)) {
+                      for (const result of socialResults) {
+                        if (result && typeof result === 'object') {
+                          sources.push({
+                            type: result.platform === 'twitter' || result.platform === 'x' ? 'twitter' : 'ex',
+                            title: (result.text || result.content || '').substring(0, 100) + '...' || 'Social Post',
+                            url: result.url || result.permalink || '',
+                            snippet: result.text || result.content || '',
+                            author: result.username || result.author,
+                            date: result.created_at || result.date,
+                            profile_image: result.profile_image_url || result.avatar,
+                            verified: result.verified,
+                            engagement: result.engagement || {
+                              likes: result.like_count || result.favorites,
+                              retweets: result.retweet_count || result.shares,
+                              replies: result.reply_count || result.comments
+                            }
+                          });
+                        }
+                      }
+                    }
+                  }
             }
           } catch (parseError) {
             console.warn('Error parsing search results:', parseError);
@@ -146,19 +159,25 @@ export class GrokService {
     }
 
     // Alternative extraction from direct response metadata
-    if (sources.length === 0) {
+    if (sources.length === 0 && data && typeof data === 'object') {
       // Check for sources in various possible locations in the response
-      const possibleSources = data.sources || data.search_results || data.references || [];
+      const dataObj = data as Record<string, unknown>;
+      const possibleSources = dataObj.sources || dataObj.search_results || dataObj.references || [];
       
-      for (const source of possibleSources) {
-        sources.push({
-          type: source.type === 'social' || source.platform === 'twitter' ? 'twitter' : 'web',
-          title: source.title || source.name || 'Source',
-          url: source.url || source.link || '',
-          snippet: source.snippet || source.description || source.content || '',
-          author: source.author || source.username,
-          date: source.date || source.created_at
-        });
+      if (Array.isArray(possibleSources)) {
+        for (const source of possibleSources) {
+          if (source && typeof source === 'object') {
+            const sourceObj = source as Record<string, unknown>;
+            sources.push({
+              type: sourceObj.type === 'social' || sourceObj.platform === 'twitter' ? 'twitter' : 'web',
+              title: sourceObj.title as string || sourceObj.name as string || 'Source',
+              url: sourceObj.url as string || sourceObj.link as string || '',
+              snippet: sourceObj.snippet as string || sourceObj.description as string || sourceObj.content as string || '',
+              author: sourceObj.author as string || sourceObj.username as string,
+              date: sourceObj.date as string || sourceObj.created_at as string
+            });
+          }
+        }
       }
     }
 
