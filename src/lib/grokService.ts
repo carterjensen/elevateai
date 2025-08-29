@@ -150,9 +150,11 @@ export class GrokService {
                       }
                     }
                   }
+                } catch (parseError) {
+                  console.warn('Error parsing search results:', parseError);
+                }
+              }
             }
-          } catch (parseError) {
-            console.warn('Error parsing search results:', parseError);
           }
         }
       }

@@ -637,7 +637,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Sentiment analysis API error:', error);
     return NextResponse.json(
-      { error: `Internal server error: ${error.message}` },
+      { error: `Internal server error: ${error instanceof Error ? error.message : String(error)}` },
       { status: 500 }
     );
   }
@@ -651,14 +651,14 @@ function generateComparison(platforms: PlatformAnalysis[]): SentimentAnalysisRes
   platforms.forEach(platform => {
     averageScores[platform.platform] = {};
     metricNames.forEach(metric => {
-      averageScores[platform.platform][metric] = platform.metrics[metric].score;
+      averageScores[platform.platform][metric] = platform.metrics[metric as keyof typeof platform.metrics].score;
     });
   });
 
   // Find strongest and weakest metrics across all platforms
   const metricAverages: { [metric: string]: number } = {};
   metricNames.forEach(metric => {
-    const scores = platforms.map(p => p.metrics[metric].score);
+    const scores = platforms.map(p => p.metrics[metric as keyof typeof p.metrics].score);
     metricAverages[metric] = scores.reduce((a, b) => a + b, 0) / scores.length;
   });
 

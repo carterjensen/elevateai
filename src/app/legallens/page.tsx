@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 
 interface ComplianceViolation {
@@ -345,7 +345,7 @@ export default function LegalLens() {
           </p>
           <div className="flex flex-wrap justify-center gap-2 text-sm text-gray-500">
             <span>Compliance Areas:</span>
-            {selectedClient.compliance_areas.slice(0, 4).map((area, index) => (
+            {selectedClient.compliance_areas.slice(0, 4).map((area) => (
               <span key={area} className="px-2 py-1 bg-purple-50 text-purple-600 rounded-full">
                 {area}
               </span>

@@ -171,6 +171,7 @@ export default function GeoXPage() {
             {testimonials.map((testimonial, index) => (
               <div key={index} className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-purple-400/40 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/10 transform hover:scale-105">
                 <div className="mb-6">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img 
                     src={testimonial.tweetImage} 
                     alt={`Tweet by ${testimonial.author}`} 

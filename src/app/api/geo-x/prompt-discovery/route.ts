@@ -6,6 +6,7 @@ import path from 'path';
 interface PromptDiscoveryRequest {
   email: string;
   productCategory: string;
+  targetAudience?: string;
 }
 
 interface DiscoveryQuery {

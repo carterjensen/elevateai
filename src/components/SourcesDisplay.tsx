@@ -109,6 +109,7 @@ const SourceCard: React.FC<{ source: Source }> = ({ source }) => {
       {(source.type === 'twitter' || source.type === 'ex') && source.author && (
         <div className="flex items-center gap-2 mb-3">
           {source.profile_image && (
+            /* eslint-disable-next-line @next/next/no-img-element */
             <img 
               src={source.profile_image} 
               alt={`${source.author}'s profile`}

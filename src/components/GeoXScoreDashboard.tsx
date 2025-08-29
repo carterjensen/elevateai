@@ -192,11 +192,11 @@ const PlatformComparison = ({ platforms }: { platforms: PlatformAnalysis[] }) =>
                   <div className="flex-1 bg-black/30 rounded-full h-2">
                     <div 
                       className="h-2 rounded-full bg-blue-400 transition-all duration-500"
-                      style={{ width: `${Math.min(openai.metrics[key].score * 10, 100)}%` }}
+                      style={{ width: `${Math.min(openai.metrics[key as keyof typeof openai.metrics].score * 10, 100)}%` }}
                     />
                   </div>
                   <span className="text-blue-400 text-sm font-bold min-w-[30px]">
-                    {openai.metrics[key].score.toFixed(1)}
+                    {openai.metrics[key as keyof typeof openai.metrics].score.toFixed(1)}
                   </span>
                 </div>
               )}
@@ -207,11 +207,11 @@ const PlatformComparison = ({ platforms }: { platforms: PlatformAnalysis[] }) =>
                   <div className="flex-1 bg-black/30 rounded-full h-2">
                     <div 
                       className="h-2 rounded-full bg-purple-400 transition-all duration-500"
-                      style={{ width: `${Math.min(grok.metrics[key].score * 10, 100)}%` }}
+                      style={{ width: `${Math.min(grok.metrics[key as keyof typeof grok.metrics].score * 10, 100)}%` }}
                     />
                   </div>
                   <span className="text-purple-400 text-sm font-bold min-w-[30px]">
-                    {grok.metrics[key].score.toFixed(1)}
+                    {grok.metrics[key as keyof typeof grok.metrics].score.toFixed(1)}
                   </span>
                 </div>
               )}
@@ -864,17 +864,21 @@ export default function GeoXScoreDashboard({ onClose }: GeoXScoreDashboardProps)
 
                 {/* Metrics Grid */}
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                  {results.platforms[0] && metricConfigs.map((config) => (
-                    <MetricCard
-                      key={config.key}
-                      name={config.label}
-                      score={results.platforms[0].metrics[config.key].score}
-                      reasoning={results.platforms[0].metrics[config.key].reasoning}
-                      examples={results.platforms[0].metrics[config.key].examples}
-                      icon={config.icon}
-                      color={config.color}
-                    />
-                  ))}
+                  {results.platforms[0] && metricConfigs.map((config) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const metrics = results.platforms[0].metrics as Record<string, any>;
+                    return (
+                      <MetricCard
+                        key={config.key}
+                        name={config.label}
+                        score={metrics[config.key].score}
+                        reasoning={metrics[config.key].reasoning}
+                        examples={metrics[config.key].examples}
+                        icon={config.icon}
+                        color={config.color}
+                      />
+                    );
+                  })}
                 </div>
 
                 {/* Platform Comparison */}
